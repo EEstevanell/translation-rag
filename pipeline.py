@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import List, Optional
+import os
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains import RetrievalQA
@@ -17,6 +18,15 @@ from langchain_community.vectorstores import Chroma
 
 def get_embeddings(model_name: str):
     """Return an embedding instance with multiple fallbacks."""
+    # Prefer Fireworks embeddings when API key is available
+    try:
+        from langchain_fireworks import FireworksEmbeddings
+
+        if os.getenv("FIREWORKS_API_KEY"):
+            return FireworksEmbeddings(model=model_name)
+    except Exception:
+        pass
+
     try:
         from langchain_community.embeddings import HuggingFaceEmbeddings
 
