@@ -1,0 +1,22 @@
+[
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "La conexión a la base de datos falló", "target_sentence": "The database connection failed"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "Por favor actualice el software", "target_sentence": "Please update the software"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "El servidor está caído", "target_sentence": "The server is down"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "Las credenciales de acceso son incorrectas", "target_sentence": "Login credentials are incorrect"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "La aplicación se bloqueó", "target_sentence": "The application crashed"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "La copia de seguridad de datos se completó exitosamente", "target_sentence": "Data backup completed successfully"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "Error de tiempo de espera de red", "target_sentence": "Network timeout error"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "Carga de archivo en progreso", "target_sentence": "File upload in progress"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "Formato de correo electrónico inválido", "target_sentence": "Invalid email format"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "La contraseña debe contener caracteres especiales", "target_sentence": "Password must contain special characters"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "El informe trimestral está listo", "target_sentence": "The quarterly report is ready"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "Se requiere aprobación del presupuesto", "target_sentence": "Budget approval required"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "Objetivo de ventas superado", "target_sentence": "Sales target exceeded"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "El contrato necesita revisión", "target_sentence": "Contract needs revision"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "Campaña de marketing lanzada", "target_sentence": "Marketing campaign launched"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "Encuesta de satisfacción del cliente", "target_sentence": "Customer satisfaction survey"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "Lanzamiento de producto programado", "target_sentence": "Product launch scheduled"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "Sesión de capacitación obligatoria", "target_sentence": "Training session mandatory"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "Evaluación de desempeño completada", "target_sentence": "Performance review completed"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "Evento de trabajo en equipo", "target_sentence": "Team building event"}
+]
