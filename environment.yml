@@ -8,5 +8,9 @@ dependencies:
       - langchain>=0.2.0
       - langchain_community
       - langchain_fireworks
+      - langchain_chroma
       - chromadb
       - python-dotenv
+      - sentence-transformers  # For better embeddings
+      - huggingface-hub        # HuggingFace integration
+      - transformers           # For HuggingFace embeddings
