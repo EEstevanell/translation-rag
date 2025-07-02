@@ -1,233 +1,241 @@
-"""Translation RAG system using Fireworks via LangChain and ChromaDB."""
-import os
+"""Unified Translation RAG system built on the reusable pipeline."""
 import sys
 from typing import List, Optional
-from dotenv import load_dotenv
-from langchain_fireworks import ChatFireworks
-from langchain_community.vectorstores import Chroma
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.chains import RetrievalQA
-from langchain.schema import Document
-from langchain.prompts import PromptTemplate
 
-# Load environment variables
-load_dotenv()
+from config import Config
+from utils import (
+    load_translation_data,
+    format_translation_examples,
+    setup_sample_data_file,
+    get_supported_languages,
+)
+from pipeline import RAGPipeline, create_llm, get_embeddings
+
 
 class TranslationRAG:
-    """Translation RAG system with ChromaDB vector store."""
+    """Translation RAG system with ChromaDB integration."""
     
-    def __init__(self):
+    def __init__(self, config_file: Optional[str] = None):
         """Initialize the Translation RAG system."""
-        self.setup_environment()
-        self.setup_llm()
-        self.setup_vectorstore()
-        self.setup_retrieval_chain()
+        Config.validate()
+        self.config = Config
+        self.setup_pipeline()
+        self.load_translation_data()
     
-    def setup_environment(self):
-        """Setup environment variables and validate configuration."""
-        # Validate required environment variables
-        required_vars = ['FIREWORKS_API_KEY', 'FIREWORKS_BASE_URL', 'MODEL_NAME']
-        missing_vars = [var for var in required_vars if not os.getenv(var)]
-        
-        if missing_vars:
-            raise ValueError(f"Missing required environment variables: {missing_vars}")
-        
-        # Set up logging
-        log_level = os.getenv('LOG_LEVEL', 'INFO')
-        print(f"Log level set to: {log_level}")
-        
-        # Print configuration
-        print(f"Model: {os.getenv('MODEL_NAME')}")
-        print(f"Max tokens: {os.getenv('MAX_TOKENS', '4096')}")
-        print(f"Reflection enabled: {os.getenv('ENABLE_REFLECTION', 'false')}")
-    
-    def setup_llm(self):
-        """Setup the Fireworks LLM."""
-        self.llm = ChatFireworks(
-            model=os.getenv('MODEL_NAME'),
-            max_tokens=int(os.getenv('MAX_TOKENS', 4096)),
-            temperature=0.7,
-            fireworks_api_key=os.getenv('FIREWORKS_API_KEY'),
-            fireworks_api_base=os.getenv('FIREWORKS_BASE_URL')
+    def setup_pipeline(self) -> None:
+        """Create the reusable RAG pipeline."""
+        llm = create_llm(
+            self.config.MODEL_NAME,
+            self.config.FIREWORKS_API_KEY,
+            self.config.FIREWORKS_BASE_URL,
+            self.config.MAX_TOKENS,
         )
-        print("✓ Fireworks LLM configured")
-    
-    def setup_vectorstore(self):
-        """Setup ChromaDB vector store."""
-        self.vectorstore = None
-        self.persist_directory = "./chroma_db"
-        print("✓ ChromaDB configuration ready")
-    
-    def setup_retrieval_chain(self):
-        """Setup the retrieval chain."""
-        # Translation-specific prompt template
-        self.prompt_template = PromptTemplate(
-            template="""You are an expert translator. Use the following context to help with translation tasks.
-            
-            Context: {context}
-            
-            Question: {question}
-            
-            Provide accurate translations and explain any cultural nuances or alternative translations when relevant.
-            
-            Answer:""",
-            input_variables=["context", "question"]
+        self.llm = llm
+        embeddings = get_embeddings(self.config.EMBEDDING_MODEL)
+        self.pipeline = RAGPipeline(
+            llm,
+            embeddings,
+            self.config.CHROMA_PERSIST_DIR,
+            chunk_size=self.config.CHUNK_SIZE,
+            chunk_overlap=self.config.CHUNK_OVERLAP,
         )
+
+        # Custom prompt for the pipeline
+        self.pipeline.prompt_template = PromptTemplate(
+            template="""You are an expert multilingual translator with deep cultural knowledge.
+            Use the following translation examples and context to help with translation tasks.
+
+            Context Examples:
+            {context}
+
+            Translation Request: {question}
+
+            Instructions:
+            1. Provide accurate translations
+            2. Explain cultural nuances when relevant
+            3. Suggest alternative translations if appropriate
+            4. Consider formality levels (formal/informal)
+            5. Note any regional variations
+
+            Supported Languages: English, Spanish, French, German, Italian, Portuguese, Chinese, Japanese, Korean, Russian, Arabic, Hindi
+
+            Response:""",
+            input_variables=["context", "question"],
+        )
+        print("✓ RAG pipeline configured")
+    
+    def load_translation_data(self):
+        """Load translation data from file or create sample data."""
+        # Ensure sample data file exists
+        setup_sample_data_file()
         
-        print("✓ Retrieval chain configured")
+        # Load translation data
+        data = load_translation_data("translation_data.json")
+        if data:
+            formatted_examples = format_translation_examples(data)
+            metadatas = [
+                {
+                    "type": item.get("type", "general"),
+                    "languages": list(item.get("translations", {}).keys()),
+                    "context": item.get("context", "General"),
+                    "formality": item.get("formality", "neutral")
+                }
+                for item in data
+            ]
+            self.add_documents(formatted_examples, metadatas)
+            print(f"✓ Loaded {len(data)} translation examples from file")
+        else:
+            # Fallback to basic examples
+            self.add_basic_examples()
     
     def add_documents(self, texts: List[str], metadatas: Optional[List[dict]] = None):
-        """Add documents to the vector store."""
-        if not texts:
-            print("No texts provided to add to vector store")
-            return
-        
-        # Split texts into chunks
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1000,
-            chunk_overlap=200,
-            length_function=len,
-        )
-        
-        documents = []
-        for i, text in enumerate(texts):
-            chunks = text_splitter.split_text(text)
-            for chunk in chunks:
-                metadata = metadatas[i] if metadatas and i < len(metadatas) else {}
-                documents.append(Document(page_content=chunk, metadata=metadata))
-        
-        # Try to use ChromaDB with embeddings
-        try:
-            # Try HuggingFace embeddings first
-            from langchain_community.embeddings import HuggingFaceEmbeddings
-            embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+        """Add documents to the underlying pipeline."""
+        self.pipeline.add_documents(texts, metadatas)
+        self.vectorstore = self.pipeline.vectorstore
+    
+    def add_basic_examples(self):
+        """Add basic translation examples as fallback."""
+        basic_examples = [
+            """Context: Common Greetings (Formality: informal)
+English: Hello, how are you?
+Spanish: Hola, ¿cómo estás?
+French: Bonjour, comment ça va?
+German: Hallo, wie geht's?
+Italian: Ciao, come stai?""",
             
-            self.vectorstore = Chroma.from_documents(
-                documents=documents,
-                embedding=embeddings,
-                persist_directory=self.persist_directory
-            )
-            self.vectorstore.persist()
-            print(f"✓ Added {len(documents)} document chunks to ChromaDB with HuggingFace embeddings")
-        except ImportError:
-            print("HuggingFace embeddings not available, trying basic setup...")
-            try:
-                # Fallback to basic ChromaDB setup
-                from langchain_community.embeddings import FakeEmbeddings
-                embeddings = FakeEmbeddings(size=384)
-                
-                self.vectorstore = Chroma.from_documents(
-                    documents=documents,
-                    embedding=embeddings,
-                    persist_directory=self.persist_directory
-                )
-                self.vectorstore.persist()
-                print(f"✓ Added {len(documents)} document chunks to ChromaDB with fake embeddings")
-            except Exception as e:
-                print(f"Warning: Could not setup ChromaDB: {e}")
-                print("Falling back to simple text storage")
-                self.documents = documents
-    
-    def query(self, question: str, use_rag: bool = True) -> str:
-        """Query the system with or without RAG."""
-        if use_rag and self.vectorstore:
-            # Use RAG with vector store
-            retriever = self.vectorstore.as_retriever(search_kwargs={"k": 3})
-            qa_chain = RetrievalQA.from_chain_type(
-                llm=self.llm,
-                chain_type="stuff",
-                retriever=retriever,
-                chain_type_kwargs={"prompt": self.prompt_template}
-            )
-            response = qa_chain.run(question)
-        elif use_rag and hasattr(self, 'documents'):
-            # Simple fallback: use document context
-            context = "\n\n".join([doc.page_content for doc in self.documents[:3]])
-            prompt = self.prompt_template.format(context=context, question=question)
-            response = self.llm.invoke(prompt)
-            response = response.content if hasattr(response, 'content') else str(response)
-        else:
-            # Direct LLM query without RAG
-            response = self.llm.invoke(question)
-            response = response.content if hasattr(response, 'content') else str(response)
-        
-        return response
-    
-    def add_translation_examples(self):
-        """Add some example translation documents."""
-        example_texts = [
-            """
-            English: Hello, how are you?
-            Spanish: Hola, ¿cómo estás?
-            French: Bonjour, comment allez-vous?
-            German: Hallo, wie geht es dir?
-            Italian: Ciao, come stai?
-            """,
-            """
-            English: Thank you very much.
-            Spanish: Muchas gracias.
-            French: Merci beaucoup.
-            German: Vielen Dank.
-            Italian: Grazie mille.
-            """,
-            """
-            English: Where is the bathroom?
-            Spanish: ¿Dónde está el baño?
-            French: Où sont les toilettes?
-            German: Wo ist die Toilette?
-            Italian: Dove si trova il bagno?
-            """,
-            """
-            English: I would like to order food.
-            Spanish: Me gustaría pedir comida.
-            French: J'aimerais commander de la nourriture.
-            German: Ich möchte Essen bestellen.
-            Italian: Vorrei ordinare del cibo.
-            """
+            """Context: Expressing Gratitude (Formality: neutral)
+English: Thank you very much
+Spanish: Muchas gracias
+French: Merci beaucoup
+German: Vielen Dank
+Italian: Grazie mille""",
+            
+            """Context: Asking for Directions (Formality: neutral)
+English: Where is the bathroom?
+Spanish: ¿Dónde está el baño?
+French: Où sont les toilettes?
+German: Wo ist die Toilette?
+Italian: Dove si trova il bagno?""",
+            
+            """Context: Business Communication (Formality: formal)
+English: I would like to schedule a meeting
+Spanish: Me gustaría programar una reunión
+French: J'aimerais programmer une réunion
+German: Ich möchte einen Termin vereinbaren
+Italian: Vorrei programmare una riunione"""
         ]
         
         metadatas = [
-            {"type": "greeting", "languages": ["en", "es", "fr", "de", "it"]},
-            {"type": "courtesy", "languages": ["en", "es", "fr", "de", "it"]},
-            {"type": "question", "languages": ["en", "es", "fr", "de", "it"]},
-            {"type": "request", "languages": ["en", "es", "fr", "de", "it"]}
+            {"type": "greeting", "context": "Common Greetings", "formality": "informal"},
+            {"type": "courtesy", "context": "Expressing Gratitude", "formality": "neutral"},
+            {"type": "question", "context": "Asking for Directions", "formality": "neutral"},
+            {"type": "business", "context": "Business Communication", "formality": "formal"}
         ]
         
-        self.add_documents(example_texts, metadatas)
-        print("✓ Added example translation documents")
+        self.add_documents(basic_examples, metadatas)
+        print("✓ Added basic translation examples")
+    
+    def query(self, question: str, use_rag: bool = True) -> str:
+        """Query the system with enhanced response handling."""
+        if use_rag:
+            response = self.pipeline.query(question, use_rag=True, k=4)
+        else:
+            enhanced_prompt = (
+                f"You are an expert multilingual translator.\n\n"
+                f"Supported Languages: {', '.join(get_supported_languages().values())}\n\n"
+                f"Translation Request: {question}\n\n"
+                "Please provide accurate translations and explain any cultural nuances when relevant."
+            )
+            response = self.pipeline.llm.invoke(enhanced_prompt)
+            response = response.content if hasattr(response, "content") else str(response)
+        return response
+    
+    def display_stats(self):
+        """Display system statistics."""
+        print("\n" + "="*50)
+        print("Translation RAG System Stats")
+        print("="*50)
+        
+        if self.pipeline.vectorstore:
+            try:
+                collection = self.pipeline.vectorstore._collection
+                count = collection.count()
+                print(f"Documents in ChromaDB: {count}")
+            except Exception:
+                print("ChromaDB: Active (stats unavailable)")
+        else:
+            print("No documents loaded")
+        
+        print(f"Supported Languages: {len(get_supported_languages())}")
+        print(f"ChromaDB Directory: {self.pipeline.persist_directory}")
+        
+        self.config.display()
+        print("="*50)
 
 
 def main():
-    """Main function to run the Translation RAG system."""
+    """Command line interface for the Translation RAG system."""
     try:
-        # Initialize the RAG system
-        rag = TranslationRAG()
-        
-        # Add example translation data
-        rag.add_translation_examples()
-        
-        if len(sys.argv) < 2:
+        if len(sys.argv) >= 2 and sys.argv[1] == "--help":
+            print("\nTranslation RAG System Help")
+            print("===========================")
+            print("This system uses RAG (Retrieval Augmented Generation) to provide")
+            print("accurate translations with cultural context.")
             print("\nUsage:")
             print("  python rag.py '<translation_query>'")
             print("  python rag.py '<translation_query>' --no-rag")
+            print("  python rag.py --stats")
+            print("  python rag.py --seed")
+            print("  python rag.py --help")
+            sys.exit(0)
+
+        if len(sys.argv) >= 2 and sys.argv[1] == "--seed":
+            TranslationRAG()
+            print("\u2713 Seeded example translations into ChromaDB")
+            sys.exit(0)
+
+        rag = TranslationRAG()
+
+        if len(sys.argv) < 2:
+            print("\nTranslation RAG System")
+            print("=====================")
+            print("\nUsage:")
+            print("  python rag.py '<translation_query>'")
+            print("  python rag.py '<translation_query>' --no-rag")
+            print("  python rag.py --stats")
+            print("  python rag.py --seed")
+            print("  python rag.py --help")
             print("\nExamples:")
             print("  python rag.py 'How do you say goodbye in Spanish?'")
             print("  python rag.py 'Translate I love you to French'")
+            print("  python rag.py 'What is the formal way to say hello in German?'")
             sys.exit(1)
-        
+
+        if sys.argv[1] == "--stats":
+            rag.display_stats()
+            sys.exit(0)
+
         query = sys.argv[1]
         use_rag = "--no-rag" not in sys.argv
-        
-        print(f"\nQuery: {query}")
+
+        print(f"\nTranslation Query: {query}")
         print(f"Using RAG: {use_rag}")
-        print("-" * 50)
-        
-        # Query the system
+        print("-" * 60)
+
         response = rag.query(query, use_rag=use_rag)
         print(f"\nResponse:\n{response}")
+
+        if "--stats" in sys.argv:
+            rag.display_stats()
         
+    except KeyboardInterrupt:
+        print("\n\nTranslation session interrupted by user.")
+        sys.exit(0)
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"\nError: {e}")
+        if Config.LOG_LEVEL == "DEBUG":
+            import traceback
+            traceback.print_exc()
         sys.exit(1)
 
 
