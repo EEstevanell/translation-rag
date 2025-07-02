@@ -9,6 +9,7 @@ This project implements a comprehensive Retrieval Augmented Generation (RAG) sys
 - **ChromaDB Integration**: Vector storage for efficient similarity search
 - **Fireworks AI**: Powered by advanced language models
 - **Flexible Embedding Options**: HuggingFace, SentenceTransformers, or fallback embeddings
+- **Reusable Pipeline**: `pipeline.py` provides a consistent RAG setup
 - **Environment Configuration**: Configurable via `.env` file
 - **Multiple Usage Modes**: With or without RAG, CLI interface
 
@@ -19,8 +20,8 @@ translation-rag/
 ├── .env                    # Environment variables
 ├── config.py              # Configuration management
 ├── utils.py               # Utility functions
-├── rag.py                 # Basic RAG implementation
-├── enhanced_rag.py        # Enhanced RAG with better features
+├── pipeline.py            # Reusable RAG pipeline
+├── rag.py                 # Translation RAG entry point
 ├── translation_data.json  # Sample translation data (auto-generated)
 ├── environment.yml        # Conda environment specification
 ├── chroma_db/            # ChromaDB persistent storage (auto-created)
@@ -83,33 +84,36 @@ python rag.py "How do you say hello in Spanish?"
 python rag.py "Translate 'goodbye' to French" --no-rag
 ```
 
-### Enhanced RAG System (Recommended)
+### Context-Aware RAG System
 
 ```bash
-# Enhanced translation with cultural context
-python enhanced_rag.py "What is the formal way to greet someone in German?"
+# Translation with cultural context
+python rag.py "What is the formal way to greet someone in German?"
 
 # Show system statistics
-python enhanced_rag.py --stats
+python rag.py --stats
+
+# Seed example data
+python rag.py --seed
 
 # Help information
-python enhanced_rag.py --help
+python rag.py --help
 ```
 
 ### Example Queries
 
 ```bash
 # Basic translations
-python enhanced_rag.py "How do you say 'thank you' in Italian?"
+python rag.py "How do you say 'thank you' in Italian?"
 
 # Cultural context
-python enhanced_rag.py "What's the difference between formal and informal greetings in French?"
+python rag.py "What's the difference between formal and informal greetings in French?"
 
 # Business translations
-python enhanced_rag.py "How do I politely decline a meeting in Spanish?"
+python rag.py "How do I politely decline a meeting in Spanish?"
 
 # Multiple languages
-python enhanced_rag.py "Translate 'I love you' to German, Italian, and Portuguese"
+python rag.py "Translate 'I love you' to German, Italian, and Portuguese"
 ```
 
 ## Features in Detail
@@ -142,7 +146,7 @@ The system provides:
 ```
 User Query
     ↓
-Enhanced RAG System
+Translation RAG System
     ↓
 1. Document Retrieval (ChromaDB)
     ↓
@@ -161,7 +165,7 @@ Contextual Translation Response
 
 1. Update `utils.py` `get_supported_languages()` function
 2. Add translation examples to `translation_data.json`
-3. Update prompt templates in `enhanced_rag.py`
+3. Update prompt templates in `rag.py`
 
 ### Custom Translation Data
 
