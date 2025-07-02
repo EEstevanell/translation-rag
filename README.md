@@ -1,243 +1,169 @@
-# Translation RAG
+# Translation Memory with RAG - Experimental Repository
 
-This project implements a comprehensive Retrieval Augmented Generation (RAG) system for multilingual translation tasks using Fireworks AI and ChromaDB. The system provides contextually aware translations with cultural nuances and supports multiple formality levels.
+This is an experimental repository where we're exploring the integration of Retrieval Augmented Generation (RAG) with translation memory concepts. We're testing how RAG can enhance translation systems by providing contextually relevant examples from a curated translation memory.
 
-## Features
+**Note: This is a research/testing project and not a production-ready translation system.**
 
-- **Multi-language Support**: English, Spanish, French, German, Italian, Portuguese, Chinese, Japanese, Korean, Russian, Arabic, Hindi
-- **Cultural Context Awareness**: Provides cultural nuances and alternative translations
-- **ChromaDB Integration**: Vector storage for efficient similarity search
-- **Fireworks AI**: Powered by advanced language models
-- **Flexible Embedding Options**: HuggingFace, SentenceTransformers, or fallback embeddings
-- **Reusable Pipeline**: `pipeline.py` provides a consistent RAG setup
-- **Environment Configuration**: Configurable via `.env` file
-- **Multiple Usage Modes**: With or without RAG, CLI interface
+## What We're Exploring
 
-## Project Structure
+- **Translation Memory + RAG**: Combining traditional translation memory approaches with modern RAG techniques
+- **Context-Aware Retrieval**: How well can vector search find relevant translation examples?
+- **Cultural Context Integration**: Testing if RAG can surface cultural nuances and formality levels
+- **Multi-language Vector Embeddings**: Experimenting with different embedding models for multilingual content
+- **Scalable Architecture**: Building a flexible pipeline that could be extended for various translation workflows
+
+## Current Implementation Features
+
+- Multi-language support
+- ChromaDB vector storage for translation examples
+- Fireworks AI integration for generation
+- Flexible embedding model fallbacks
+- CLI interface for testing different scenarios
+
+## Repository Structure
 
 ```
 translation-rag/
-├── .env                    # Environment variables
 ├── config.py              # Configuration management
 ├── utils.py               # Utility functions
-├── pipeline.py            # Reusable RAG pipeline
-├── rag.py                 # Translation RAG entry point
-├── translation_data.json  # Sample translation data (auto-generated)
-├── seed_memory/          # Seed translation memory entries
+├── pipeline.py            # Reusable RAG pipeline setup
+├── rag.py                 # Main translation RAG interface
+├── translation_memory.py  # Translation memory management
+├── seed_memory/           # Sample translation memories (generated with Claude Sonnet 4)
+│   ├── en_de.json         # English-German pairs
+│   ├── en_es.json         # English-Spanish pairs
+│   └── ...                # Other language combinations
 ├── environment.yml        # Conda environment specification
-├── chroma_db/            # ChromaDB persistent storage (auto-created)
-└── tests/                # Test files
+├── chroma_db/             # ChromaDB storage (created automatically)
+└── tests/                 # Test suite
 ```
 
-## Setup
+**About seed_memory**: The translation example files in `seed_memory/` were automatically generated using Claude Sonnet 4 to provide diverse, culturally-aware translation pairs for testing our RAG approach.
 
-### 1. Environment Setup
+## Getting Started
 
-Create and activate the conda environment:
+### Prerequisites
+- Anaconda or Miniconda
+- Fireworks AI API access
 
+### Setup
+
+1. **Clone and setup environment**:
 ```bash
-# Create the environment
 conda env create -f environment.yml
-
-# Activate it
 conda activate translation-rag
 ```
 
-### 2. Environment Variables
-
-The system uses the provided `.env` file with the following configuration:
-
+2. **Configure your API key**:
+Create a `.env` file with your Fireworks API credentials:
 ```properties
-FIREWORKS_API_KEY=fw_3ZLfuJfWee5j68B4dGftTC3U
+FIREWORKS_API_KEY=your_api_key_here
 FIREWORKS_BASE_URL=https://api.fireworks.ai/inference/v1
 MODEL_NAME=accounts/fireworks/models/llama4-scout-instruct-basic
-MAX_TOKENS=4096
-LOG_LEVEL=INFO
-ENABLE_REFLECTION=false
 ```
 
-Additional optional configuration variables:
-```properties
-CHROMA_PERSIST_DIR=./chroma_db
-CHUNK_SIZE=1000
-CHUNK_OVERLAP=200
-EMBEDDING_MODEL=nomic-ai/nomic-embed-text-v1.5
-```
-
-### 3. Dependencies
-
-The environment includes all necessary dependencies:
-- `langchain` and `langchain_community` for RAG framework
-- `langchain_fireworks` for Fireworks AI integration
-- `chromadb` for vector storage
-- `sentence-transformers` and `transformers` for embeddings
-- `python-dotenv` for environment management
-
-## Usage
-
-### Basic RAG System
-
+3. **Test the setup**:
 ```bash
-# Basic translation query
 python rag.py "How do you say hello in Spanish?"
-
-# Without RAG (direct LLM)
-python rag.py "Translate 'goodbye' to French" --no-rag
 ```
 
-### Context-Aware RAG System
+## Testing Different Approaches
 
+### Basic RAG vs Direct LLM
 ```bash
-# Translation with cultural context
-python rag.py "What is the formal way to greet someone in German?"
-
-# Show system statistics
-python rag.py --stats
-
-# Seed example data
-python rag.py --seed
-
-# Help information
-python rag.py --help
-```
-
-### Example Queries
-
-```bash
-# Basic translations
+# Using RAG (retrieves similar examples from translation memory)
 python rag.py "How do you say 'thank you' in Italian?"
 
-# Cultural context
-python rag.py "What's the difference between formal and informal greetings in French?"
-
-# Business translations
-python rag.py "How do I politely decline a meeting in Spanish?"
-
-# Multiple languages
-python rag.py "Translate 'I love you' to German, Italian, and Portuguese"
+# Direct LLM (no retrieval)
+python rag.py "How do you say 'thank you' in Italian?" --no-rag
 ```
 
-## Features in Detail
+### Experimenting with Different Queries
+```bash
+# Test cultural context awareness
+python rag.py "What's the formal way to greet someone in German?"
 
-### RAG System Components
+# Test formality levels
+python rag.py "How do I politely decline a meeting in Spanish?"
 
-1. **Document Processing**: Text splitting and chunking for optimal retrieval
-2. **Vector Storage**: ChromaDB with persistent storage
-3. **Embedding Models**: Multiple fallback options for embeddings
-4. **Retrieval Chain**: Context-aware prompt templates
-5. **LLM Integration**: Fireworks AI for generation
+# Test technical translations
+python rag.py "Translate 'machine learning algorithm' to French"
+```
 
-### Translation Context
+### System Analysis
+```bash
+# Show retrieval statistics
+python rag.py --stats
 
-The system provides:
-- **Formality Levels**: Formal, informal, neutral
-- **Cultural Nuances**: Regional variations and cultural context
-- **Alternative Translations**: Multiple valid options
-- **Context Categories**: Greetings, business, travel, courtesy, etc.
+# Reinitialize with seed data
+python rag.py --seed
+```
 
-### Data Management
+## What We've Learned So Far
 
-- **Sample Data**: Auto-generated translation examples
-- **Seed Memory Directory**: Extendable translation memory entries in `seed_memory/`
-- **Custom Data**: Load your own translation datasets
-- **Persistent Storage**: ChromaDB maintains vector embeddings
-- **Configuration**: Flexible settings via environment variables
+### RAG Integration Benefits
+- **Contextual Examples**: RAG successfully retrieves relevant translation pairs that provide context
+- **Cultural Nuances**: The system can surface culturally-appropriate alternatives
+- **Consistency**: Similar phrases get consistent translations when examples exist
 
-## Architecture
+### Current Limitations
+- **Cold Start**: Performance depends heavily on the quality of seed translation memory
+- **Cross-lingual Embeddings**: Some language pairs work better than others
+- **Context Boundaries**: System sometimes retrieves overly similar examples
+
+### Interesting Findings
+- ChromaDB performs well with multilingual embeddings for European languages
+- Cultural context examples significantly improve translation quality
+- The fallback embedding strategy helps with robustness
+
+## Architecture Overview
 
 ```
 User Query
     ↓
-Translation RAG System
+Translation Memory RAG Pipeline
     ↓
-1. Document Retrieval (ChromaDB)
+1. Vector Similarity Search (ChromaDB)
     ↓
-2. Context Assembly
+2. Context Assembly (Retrieved Examples)
     ↓
-3. Prompt Engineering
+3. Prompt Construction (Query + Examples)
     ↓
-4. Fireworks AI Generation
+4. LLM Generation (Fireworks AI)
     ↓
-Contextual Translation Response
+Enhanced Translation Response
 ```
 
-## Development
+## Extending the System
 
-### Adding New Languages
+### Adding New Translation Pairs
+1. Create new JSON files in `seed_memory/` following the existing format
+2. Run `python rag.py --seed` to update the vector database
 
-1. Update `utils.py` `get_supported_languages()` function
-2. Add translation examples to `translation_data.json`
-3. Update prompt templates in `rag.py`
-
-### Custom Translation Data
-
-Create a `translation_data.json` file with the following structure:
-
-```json
-[
-  {
-    "id": "example_1",
-    "type": "greeting",
-    "translations": {
-      "en": "Hello",
-      "es": "Hola",
-      "fr": "Bonjour"
-    },
-    "context": "Common greeting",
-    "formality": "informal"
-  }
-]
+### Testing New Embedding Models
+Update the embedding configuration in `config.py` or environment variables:
+```properties
+EMBEDDING_MODEL=your-preferred-model
 ```
 
-### Configuration
+### Experimenting with Different Retrievers
+The `pipeline.py` module provides a flexible base for trying different retrieval strategies.
 
-Modify `config.py` to add new configuration options or update existing ones.
+## Development Notes
 
-## Troubleshooting
+### Key Dependencies
+- **LangChain**: RAG framework and document processing
+- **ChromaDB**: Vector storage with persistence
+- **Fireworks AI**: LLM provider
+- **SentenceTransformers**: Multilingual embeddings
 
-### ChromaDB Issues
+### Testing
+Run the test suite to validate changes:
 ```bash
-# Clean ChromaDB storage
-python -c "from utils import clean_chroma_db; clean_chroma_db()"
+python -m pytest tests/
 ```
 
-### Environment Issues
-```bash
-# Recreate environment
-conda env remove -n translation-rag
-conda env create -f environment.yml
-conda activate translation-rag
-```
-
-### Embedding Issues
-The system automatically falls back through multiple embedding options:
-1. HuggingFace Embeddings
-2. SentenceTransformer Embeddings  
-3. Fake Embeddings (fallback)
-
-## Testing
-
-Run basic tests:
-```bash
-cd tests
-python -m pytest
-```
-
-## Performance Tips
-
-1. **Embedding Models**: Use smaller models for faster performance
-2. **Chunk Size**: Adjust based on your translation data
-3. **Vector Storage**: Clean ChromaDB periodically for better performance
-4. **Batch Processing**: Process multiple translations in one session
-
-## Contributing
-
-1. Add new language support
-2. Improve translation context
-3. Enhance embedding strategies  
-4. Add specialized domain translations
-5. Improve cultural context awareness
-
-## License
-
-This project is for educational and research purposes. Please ensure compliance with Fireworks AI terms of service.
+### Common Issues
+- **ChromaDB Persistence**: If you encounter database locks, delete the `chroma_db/` directory
+- **Embedding Failures**: The system falls back through multiple embedding providers automatically
+- **API Limits**: Fireworks AI has rate limits; consider adding delays for batch processing
