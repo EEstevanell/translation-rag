@@ -23,6 +23,7 @@ translation-rag/
 ├── pipeline.py            # Reusable RAG pipeline
 ├── rag.py                 # Translation RAG entry point
 ├── translation_data.json  # Sample translation data (auto-generated)
+├── seed_memory/          # Seed translation memory entries
 ├── environment.yml        # Conda environment specification
 ├── chroma_db/            # ChromaDB persistent storage (auto-created)
 └── tests/                # Test files
@@ -60,7 +61,7 @@ Additional optional configuration variables:
 CHROMA_PERSIST_DIR=./chroma_db
 CHUNK_SIZE=1000
 CHUNK_OVERLAP=200
-EMBEDDING_MODEL=all-MiniLM-L6-v2
+EMBEDDING_MODEL=nomic-ai/nomic-embed-text-v1.5
 ```
 
 ### 3. Dependencies
@@ -137,6 +138,7 @@ The system provides:
 ### Data Management
 
 - **Sample Data**: Auto-generated translation examples
+- **Seed Memory Directory**: Extendable translation memory entries in `seed_memory/`
 - **Custom Data**: Load your own translation datasets
 - **Persistent Storage**: ChromaDB maintains vector embeddings
 - **Configuration**: Flexible settings via environment variables

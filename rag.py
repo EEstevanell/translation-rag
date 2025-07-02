@@ -71,30 +71,40 @@ class TranslationRAG:
         
         # Load translation data
         data = load_translation_data("translation_data.json")
+        documents: List[str] = []
+        metadatas: List[dict] = []
         if data:
-            formatted_examples = format_translation_examples(data)
-            metadatas = [
+            documents.extend(format_translation_examples(data))
+            metadatas.extend([
                 {
                     "type": item.get("type", "general"),
                     "languages": list(item.get("translations", {}).keys()),
                     "context": item.get("context", "General"),
-                    "formality": item.get("formality", "neutral")
+                    "formality": item.get("formality", "neutral"),
                 }
                 for item in data
-            ]
-            self.add_documents(formatted_examples, metadatas)
+            ])
             print(f"✓ Loaded {len(data)} translation examples from file")
         else:
-            # Fallback to basic examples
-            self.add_basic_examples()
+            basics, basic_meta = self.get_basic_examples()
+            documents.extend(basics)
+            metadatas.extend(basic_meta)
+
+        from translation_memory import load_fake_memory, memory_to_documents
+
+        mem_texts, mem_meta = memory_to_documents(load_fake_memory())
+        documents.extend(mem_texts)
+        metadatas.extend(mem_meta)
+
+        self.add_documents(documents, metadatas)
     
     def add_documents(self, texts: List[str], metadatas: Optional[List[dict]] = None):
         """Add documents to the underlying pipeline."""
         self.pipeline.add_documents(texts, metadatas)
         self.vectorstore = self.pipeline.vectorstore
     
-    def add_basic_examples(self):
-        """Add basic translation examples as fallback."""
+    def get_basic_examples(self) -> tuple[List[str], List[dict]]:
+        """Return a list of basic translation examples and metadata."""
         basic_examples = [
             """Context: Common Greetings (Formality: informal)
 English: Hello, how are you?
@@ -131,8 +141,12 @@ Italian: Vorrei programmare una riunione"""
             {"type": "question", "context": "Asking for Directions", "formality": "neutral"},
             {"type": "business", "context": "Business Communication", "formality": "formal"}
         ]
-        
-        self.add_documents(basic_examples, metadatas)
+        return basic_examples, metadatas
+
+    def add_basic_examples(self):
+        """Add basic translation examples as fallback."""
+        examples, metas = self.get_basic_examples()
+        self.add_documents(examples, metas)
         print("✓ Added basic translation examples")
     
     def query(self, question: str, use_rag: bool = True) -> str:
