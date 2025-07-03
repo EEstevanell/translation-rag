@@ -1,0 +1,548 @@
+[
+  {
+    "id": "72d6743b-215a-437b-aa56-66bc324ee92c",
+    "text": "Buenos días",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "d5423469-be42-4e1f-a02c-600f089158c2",
+    "text": "Gracias",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "e3e17417-5df6-44f0-b887-2d448c154dd5",
+    "text": "Buenas noches",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "ce082a0f-504f-47bb-a79d-79c98d110cec",
+    "text": "¿Cómo estás?",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "4f2a961a-2f62-469f-8ce8-b210eeea9c5a",
+    "text": "Por favor",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "684a54e8-20da-43cf-bfe0-df84b72b2523",
+    "text": "Disculpe",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "60122ad0-8885-497e-9758-26e8c1991d69",
+    "text": "Lo siento",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "aa4aee27-32f4-4397-9247-a0f1b5d07f5d",
+    "text": "De nada",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "b96788e8-54a3-4f78-a8cd-600721bb62b9",
+    "text": "¿Dónde está el baño?",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "ba43861f-1e3b-40a0-be69-33db5f32095c",
+    "text": "¿Cuánto cuesta?",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "79f54b17-507e-4f6b-bc9f-ab502be14e03",
+    "text": "No entiendo",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "064dcfc7-7f08-4b4d-9275-b1326a360344",
+    "text": "¿Habla inglés?",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "099d009f-ac73-4363-9564-80763bb5a4cc",
+    "text": "Me gustaría pedir",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "0aafa4d4-b100-4a8c-9e33-f2f9baf5656c",
+    "text": "El clima está agradable hoy",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "969ac45d-b41e-4cd5-838b-20ba9a109128",
+    "text": "¿Qué hora es?",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "ebe6e401-5fed-4d65-b381-942f78eed6a6",
+    "text": "Necesito ayuda",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "a2a2e993-f58e-470b-80c3-05af86e7d02c",
+    "text": "¿Puede ayudarme?",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "b01753ab-9dd8-464e-856f-7dd1a41f26c3",
+    "text": "Tengo hambre",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "37717ebc-7c1d-4469-8538-bc0526b4256c",
+    "text": "Tengo sed",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "f5a435b9-3888-4d7b-8744-874b7500c6bc",
+    "text": "La reunión es a las tres en punto",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "1bf3f28f-f3d5-4a58-8223-f90cfcca37c4",
+    "text": "Por favor envíeme el informe",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "1d1a3f6d-7b7d-4996-a351-23d0ff7ab5bc",
+    "text": "Te llamaré mañana",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "2553e3dc-db8e-4f17-9f32-a8870a90e7f2",
+    "text": "Que tengas un buen día",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "d73cb28b-d3d0-4136-8c6f-83b0376eca1d",
+    "text": "Vivo en Nueva York",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "729f7fac-c820-4472-97f4-42f273f9032f",
+    "text": "Mi nombre es Juan",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "e71589b8-277d-4ce7-98e3-1455eaed2ab3",
+    "text": "Mucho gusto en conocerte",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "3853d0ea-1c59-4ff9-a278-77d156f864ab",
+    "text": "Trabajo en tecnología",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "d915fa64-ccdf-4853-be40-ffa825deba72",
+    "text": "El libro está sobre la mesa",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "3807f245-4c22-47bb-8224-4d4aeaacaa04",
+    "text": "Estoy aprendiendo español",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "c288aa91-ed5d-49a2-9f23-1adb0dec906d",
+    "text": "El proyecto está terminado",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "054317ab-265b-4df6-990e-d5d6e84f31aa",
+    "text": "Por favor revise el documento",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "80753c78-88cf-4d90-a5ae-222bfe070b9d",
+    "text": "El sistema está funcionando correctamente",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "1d609c82-76ad-4823-ada7-eeaddad35eb8",
+    "text": "Tengo una pregunta",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "b48ae05d-ea39-4c18-a17e-9b0c7c18623a",
+    "text": "El tren llega a las cinco",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "137d8f33-fd84-4dc6-b3ae-8825fa942281",
+    "text": "Gire a la izquierda en la esquina",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "e2776f37-5d7d-424c-9f59-7755c1b2ece7",
+    "text": "El restaurante está cerrado",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "917ab673-f53b-4a6d-886a-495e08aee94b",
+    "text": "Prefiero café en lugar de té",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "b9598a35-b36d-40ee-a149-d0891fca4efa",
+    "text": "La computadora no está funcionando",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "ab36ce0b-a63d-4809-a7d2-dd9d33747921",
+    "text": "Necesitamos discutir este asunto",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "c796e59a-353c-4975-babf-41aec2d4acc3",
+    "text": "La fecha límite es el próximo viernes",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "9a2ca960-1799-488b-a0ce-f279de3f3280",
+    "text": "Hola, ¿cómo estás?",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "7fe8bc3b-9119-48f7-a5a2-70e39d2a04fa",
+    "text": "¿Dónde está la biblioteca?",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "68806475-03c0-49fb-ad3e-5a958c57623e",
+    "text": "Mi nombre es María",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "a18eee5e-5191-464e-9cc2-146f9f009164",
+    "text": "Vivo en Madrid",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "bee3aaec-56e6-4f1f-aaa3-647debdee518",
+    "text": "Trabajo en una oficina",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "9f0ceda9-57ed-4959-8256-8343ef08e7e4",
+    "text": "Estoy aprendiendo inglés",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "2d6a4b94-77e1-4eb9-a3d2-3363aae458e4",
+    "text": "El libro está en la mesa",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "7e90b6b4-778e-4097-b969-777b6fc98d1a",
+    "text": "La reunión es a las dos",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "d027a13b-702e-480b-b63a-2ae553f22941",
+    "text": "Por favor envíe el documento",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "2d25bb02-3077-4a2d-9554-c18998b1acec",
+    "text": "Te llamaré más tarde",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "0719ea53-c999-42df-ae7e-6647dc91460b",
+    "text": "Que tengas buen día",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "ac219399-9bc4-477b-9542-51f9d1301c77",
+    "text": "Por favor revise el informe",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "535b2c4b-7a65-4ce0-a4e4-b34d95c397e7",
+    "text": "El sistema funciona bien",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "43ec1391-57ae-45e3-a2e7-2a13cbb3d0d0",
+    "text": "Gire a la derecha",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "7f22f0b5-3f57-4854-b1d6-c4c7c8d78de2",
+    "text": "El restaurante está abierto",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "25947ef5-5663-49d8-a3d5-9000937a1a73",
+    "text": "Prefiero té en lugar de café",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "c0f1cac6-4ef4-41d3-bee8-d1070149ab9e",
+    "text": "La computadora no funciona",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "02539aa5-152d-45d1-b2f0-a2a0bbcdd6e3",
+    "text": "Necesitamos hablar sobre esto",
+    "language": "es",
+    "domain": "general",
+    "formality": "neutral"
+  },
+  {
+    "id": "0bd69949-8fdf-4a6f-b6fd-8679881f7b67",
+    "text": "La conexión a la base de datos falló",
+    "language": "es",
+    "domain": "technical",
+    "formality": "neutral"
+  },
+  {
+    "id": "047688ee-e2c2-43ed-97e4-55ecd9b51a28",
+    "text": "Por favor actualice el software",
+    "language": "es",
+    "domain": "technical",
+    "formality": "neutral"
+  },
+  {
+    "id": "33dbb988-f9c5-4c77-925d-9e64f1a5271d",
+    "text": "El servidor está caído",
+    "language": "es",
+    "domain": "technical",
+    "formality": "neutral"
+  },
+  {
+    "id": "cc28ae7f-9d69-4b9d-be77-4066a4f01267",
+    "text": "Las credenciales de acceso son incorrectas",
+    "language": "es",
+    "domain": "technical",
+    "formality": "neutral"
+  },
+  {
+    "id": "25677c37-bc0b-4ba8-9e79-37d609522039",
+    "text": "La aplicación se bloqueó",
+    "language": "es",
+    "domain": "technical",
+    "formality": "neutral"
+  },
+  {
+    "id": "742d3943-517f-4a2e-8a03-58ab32e96274",
+    "text": "La copia de seguridad de datos se completó exitosamente",
+    "language": "es",
+    "domain": "technical",
+    "formality": "neutral"
+  },
+  {
+    "id": "ecc16156-f8a8-481b-b40a-499ed9d0fac5",
+    "text": "Error de tiempo de espera de red",
+    "language": "es",
+    "domain": "technical",
+    "formality": "neutral"
+  },
+  {
+    "id": "2d7acc63-7cc8-4dce-a07f-f131b1467115",
+    "text": "Carga de archivo en progreso",
+    "language": "es",
+    "domain": "technical",
+    "formality": "neutral"
+  },
+  {
+    "id": "75ae27e3-bdb6-4952-9732-ec0175995fc9",
+    "text": "Formato de correo electrónico inválido",
+    "language": "es",
+    "domain": "technical",
+    "formality": "neutral"
+  },
+  {
+    "id": "3014d388-01b5-43a7-848a-38280ac76a8b",
+    "text": "La contraseña debe contener caracteres especiales",
+    "language": "es",
+    "domain": "technical",
+    "formality": "neutral"
+  },
+  {
+    "id": "327ee145-22bb-4229-82be-7451bf2d510c",
+    "text": "El informe trimestral está listo",
+    "language": "es",
+    "domain": "technical",
+    "formality": "neutral"
+  },
+  {
+    "id": "1e554083-be89-495b-9e80-e6d23fdcc68f",
+    "text": "Se requiere aprobación del presupuesto",
+    "language": "es",
+    "domain": "technical",
+    "formality": "neutral"
+  },
+  {
+    "id": "b8cd537d-b75f-4b4e-9a34-77b85fa05883",
+    "text": "Objetivo de ventas superado",
+    "language": "es",
+    "domain": "technical",
+    "formality": "neutral"
+  },
+  {
+    "id": "274d406b-8a31-491e-8066-77dc2786e4ea",
+    "text": "El contrato necesita revisión",
+    "language": "es",
+    "domain": "technical",
+    "formality": "neutral"
+  },
+  {
+    "id": "372ea8b4-141e-47f6-bef8-e61f6c28bd9c",
+    "text": "Campaña de marketing lanzada",
+    "language": "es",
+    "domain": "technical",
+    "formality": "neutral"
+  },
+  {
+    "id": "f8ac94db-4667-4291-952a-c638800da646",
+    "text": "Encuesta de satisfacción del cliente",
+    "language": "es",
+    "domain": "technical",
+    "formality": "neutral"
+  },
+  {
+    "id": "3a594e6a-ea34-4c0d-a6f5-ef12766e24b7",
+    "text": "Lanzamiento de producto programado",
+    "language": "es",
+    "domain": "technical",
+    "formality": "neutral"
+  },
+  {
+    "id": "ebd7688d-5804-4e42-8e70-16987d483824",
+    "text": "Sesión de capacitación obligatoria",
+    "language": "es",
+    "domain": "technical",
+    "formality": "neutral"
+  },
+  {
+    "id": "43e1a5e2-725c-48d9-99cd-09dbebd14d1a",
+    "text": "Evaluación de desempeño completada",
+    "language": "es",
+    "domain": "technical",
+    "formality": "neutral"
+  },
+  {
+    "id": "d18df3ba-c40d-4fcb-b1b1-1f1ac6f335b1",
+    "text": "Evento de trabajo en equipo",
+    "language": "es",
+    "domain": "technical",
+    "formality": "neutral"
+  }
+]
