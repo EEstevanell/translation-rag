@@ -93,6 +93,12 @@ python -m translation_rag "How do I politely decline a meeting in Spanish?"
 python -m translation_rag "Translate 'machine learning algorithm' to French"
 ```
 
+### Filtering by language pair
+```bash
+# Restrict retrieval to a specific source/target pair
+python -m translation_rag "How do you say 'thank you' in Italian?" --from en --to es
+```
+
 ### System Analysis
 ```bash
 # Show retrieval statistics

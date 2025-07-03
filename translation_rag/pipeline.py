@@ -84,6 +84,18 @@ class RAGPipeline:
             input_variables=["context", "question"],
         )
 
+    @staticmethod
+    def _build_filter(metadata_filter: Optional[dict]) -> Optional[dict]:
+        """Convert simple key/value filters to the Chroma structured format."""
+        if not metadata_filter:
+            return None
+        if len(metadata_filter) == 1:
+            key, value = next(iter(metadata_filter.items()))
+            return {key: {"$eq": value}}
+        return {
+            "$and": [{k: {"$eq": v}} for k, v in metadata_filter.items()]
+        }
+
     def add_documents(
         self, texts: List[str], metadatas: Optional[List[dict]] = None, batch_size: int = 128
     ) -> None:
@@ -108,7 +120,12 @@ class RAGPipeline:
             documents=first_batch,
             embedding=self.embeddings,
             persist_directory=self.persist_directory,
-            client_settings=Settings(anonymized_telemetry=False),
+            client_settings=Settings(
+                anonymized_telemetry=False,
+                allow_reset=True,
+                is_persistent=True,
+                persist_directory=self.persist_directory,
+            ),
         )
         for i in range(batch_size, len(documents), batch_size):
             batch_docs = documents[i : i + batch_size]
@@ -131,7 +148,7 @@ class RAGPipeline:
         if use_rag and self.vectorstore:
             search_kwargs = {"k": k}
             if metadata_filter:
-                search_kwargs["filter"] = metadata_filter
+                search_kwargs["filter"] = self._build_filter(metadata_filter)
             retriever = self.vectorstore.as_retriever(search_kwargs=search_kwargs)
 
             # Log retrieved documents for debugging

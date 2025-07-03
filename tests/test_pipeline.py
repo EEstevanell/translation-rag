@@ -35,3 +35,15 @@ def test_pipeline_with_memory(tmp_path):
     texts, metas = memory_to_documents(load_fake_memory())
     pipeline.add_documents(texts, metas)
     assert pipeline.vectorstore is not None
+
+
+def test_build_filter_conversion():
+    multi = RAGPipeline._build_filter({"source_lang": "en", "target_lang": "es"})
+    assert multi == {
+        "$and": [
+            {"source_lang": {"$eq": "en"}},
+            {"target_lang": {"$eq": "es"}},
+        ]
+    }
+    single = RAGPipeline._build_filter({"lang_en": True})
+    assert single == {"lang_en": {"$eq": True}}
