@@ -75,6 +75,12 @@ class TranslationRAG:
     
     def load_translation_data(self):
         """Load translation data from file or create sample data."""
+        # Try loading an existing vector store to avoid reseeding each run
+        if self.pipeline.load_vectorstore():
+            self.vectorstore = self.pipeline.vectorstore
+            print("✓ Loaded existing translation memory from ChromaDB")
+            return
+
         # Ensure sample data file exists
         setup_sample_data_file()
         
@@ -108,6 +114,7 @@ class TranslationRAG:
         metadatas.extend(mem_meta)
 
         self.add_documents(documents, metadatas)
+        print(f"✓ Added {len(documents)} documents to ChromaDB")
     
     def add_documents(self, texts: List[str], metadatas: Optional[List[dict]] = None):
         """Add documents to the underlying pipeline."""

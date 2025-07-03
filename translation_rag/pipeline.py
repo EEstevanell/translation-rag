@@ -6,7 +6,6 @@ from typing import List, Optional
 import os
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.chains import RetrievalQA
 from langchain.schema import Document
 from langchain.prompts import PromptTemplate
 from langchain_fireworks import ChatFireworks
@@ -83,6 +82,31 @@ class RAGPipeline:
             ),
             input_variables=["context", "question"],
         )
+
+    def load_vectorstore(self) -> bool:
+        """Load an existing Chroma vector store if present."""
+        if not os.path.isdir(self.persist_directory):
+            return False
+        try:
+            self.vectorstore = Chroma(
+                embedding_function=self.embeddings,
+                persist_directory=self.persist_directory,
+                client_settings=Settings(
+                    anonymized_telemetry=False,
+                    allow_reset=True,
+                    is_persistent=True,
+                    persist_directory=self.persist_directory,
+                ),
+            )
+            # Trigger collection to check that data exists
+            count = self.vectorstore._collection.count()
+            if count:
+                self.logger.info(f"Loaded {count} documents from existing vector store")
+                return True
+        except Exception as exc:
+            self.logger.debug(f"Could not load existing vector store: {exc}")
+        self.vectorstore = None
+        return False
 
     @staticmethod
     def _build_filter(metadata_filter: Optional[dict]) -> Optional[dict]:
