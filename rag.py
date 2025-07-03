@@ -10,7 +10,7 @@ from utils import (
     get_supported_languages,
 )
 from pipeline import RAGPipeline, create_llm, get_embeddings
-
+from langchain.prompts import PromptTemplate
 
 class TranslationRAG:
     """Translation RAG system with ChromaDB integration."""
