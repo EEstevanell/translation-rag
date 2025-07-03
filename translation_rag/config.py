@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
+os.environ.setdefault("ANONYMIZED_TELEMETRY", "False")
 
 class Config:
     """Configuration class for Translation RAG system."""

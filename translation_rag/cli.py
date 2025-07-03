@@ -1,5 +1,10 @@
 """Unified Translation RAG system built on the reusable pipeline."""
 import sys
+import warnings
+from requests.exceptions import RequestsDependencyWarning
+
+# Silence noisy warning when charset detection libs are missing
+warnings.filterwarnings("ignore", category=RequestsDependencyWarning)
 from typing import List, Optional
 
 from .config import Config

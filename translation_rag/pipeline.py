@@ -108,7 +108,8 @@ class RAGPipeline:
             batch_docs = documents[i : i + batch_size]
             self.vectorstore.add_documents(batch_docs)
 
-        self.vectorstore.persist()
+        # Since Chroma 0.4.x documents are automatically persisted
+        # when using a persistent directory.
 
     def query(
         self,
@@ -129,7 +130,8 @@ class RAGPipeline:
                 retriever=retriever,
                 chain_type_kwargs={"prompt": self.prompt_template},
             )
-            return qa_chain.run(question)
+            result = qa_chain.invoke({"query": question})
+            return result["result"] if isinstance(result, dict) else str(result)
 
         response = self.llm.invoke(question)
         return response.content if hasattr(response, "content") else str(response)
