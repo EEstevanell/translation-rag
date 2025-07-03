@@ -110,10 +110,19 @@ class RAGPipeline:
 
         self.vectorstore.persist()
 
-    def query(self, question: str, use_rag: bool = True, k: int = 3) -> str:
-        """Query the pipeline."""
+    def query(
+        self,
+        question: str,
+        use_rag: bool = True,
+        k: int = 3,
+        metadata_filter: Optional[dict] = None,
+    ) -> str:
+        """Query the pipeline with optional metadata filtering."""
         if use_rag and self.vectorstore:
-            retriever = self.vectorstore.as_retriever(search_kwargs={"k": k})
+            search_kwargs = {"k": k}
+            if metadata_filter:
+                search_kwargs["filter"] = metadata_filter
+            retriever = self.vectorstore.as_retriever(search_kwargs=search_kwargs)
             qa_chain = RetrievalQA.from_chain_type(
                 llm=self.llm,
                 chain_type="stuff",

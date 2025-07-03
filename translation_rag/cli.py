@@ -75,15 +75,17 @@ class TranslationRAG:
         metadatas: List[dict] = []
         if data:
             documents.extend(format_translation_examples(data))
-            metadatas.extend([
-                {
-                    "type": item.get("type", "general"),
-                    "languages": list(item.get("translations", {}).keys()),
-                    "context": item.get("context", "General"),
-                    "formality": item.get("formality", "neutral"),
-                }
-                for item in data
-            ])
+            for item in data:
+                langs = list(item.get("translations", {}).keys())
+                lang_flags = {f"lang_{code}": True for code in langs}
+                metadatas.append(
+                    {
+                        "type": item.get("type", "general"),
+                        "context": item.get("context", "General"),
+                        "formality": item.get("formality", "neutral"),
+                        **lang_flags,
+                    }
+                )
             print(f"✓ Loaded {len(data)} translation examples from file")
         else:
             basics, basic_meta = self.get_basic_examples()
@@ -152,7 +154,12 @@ Italian: Vorrei programmare una riunione"""
     def query(self, question: str, use_rag: bool = True) -> str:
         """Query the system with enhanced response handling."""
         if use_rag:
-            response = self.pipeline.query(question, use_rag=True, k=4)
+            from .utils import detect_language
+            lang = detect_language(question)
+            metadata_filter = {f"lang_{lang}": True} if lang != "unknown" else None
+            response = self.pipeline.query(
+                question, use_rag=True, k=4, metadata_filter=metadata_filter
+            )
         else:
             enhanced_prompt = (
                 f"You are an expert multilingual translator.\n\n"

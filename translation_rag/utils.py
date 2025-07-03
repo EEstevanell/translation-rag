@@ -3,6 +3,7 @@ import os
 import json
 from typing import List, Dict, Any, Optional
 from pathlib import Path
+from langdetect import detect, LangDetectException
 
 
 def load_translation_data(file_path: str) -> List[Dict[str, Any]]:
@@ -169,6 +170,14 @@ def get_supported_languages() -> Dict[str, str]:
         'ar': 'Arabic',
         'hi': 'Hindi'
     }
+
+
+def detect_language(text: str) -> str:
+    """Return ISO language code detected in the given text."""
+    try:
+        return detect(text)
+    except LangDetectException:
+        return "unknown"
 
 
 def clean_chroma_db(persist_directory: str = "./chroma_db") -> bool:
