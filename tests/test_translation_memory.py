@@ -1,4 +1,4 @@
-from translation_memory import (
+from translation_rag.translation_memory import (
     TranslationMemory,
     load_fake_memory,
     memory_to_documents,

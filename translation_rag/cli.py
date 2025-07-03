@@ -2,14 +2,14 @@
 import sys
 from typing import List, Optional
 
-from config import Config
-from utils import (
+from .config import Config
+from .utils import (
     load_translation_data,
     format_translation_examples,
     setup_sample_data_file,
     get_supported_languages,
 )
-from pipeline import RAGPipeline, create_llm, get_embeddings
+from .pipeline import RAGPipeline, create_llm, get_embeddings
 from langchain.prompts import PromptTemplate
 
 class TranslationRAG:
@@ -90,7 +90,7 @@ class TranslationRAG:
             documents.extend(basics)
             metadatas.extend(basic_meta)
 
-        from translation_memory import load_fake_memory, memory_to_documents
+        from .translation_memory import load_fake_memory, memory_to_documents
 
         mem_texts, mem_meta = memory_to_documents(load_fake_memory())
         documents.extend(mem_texts)
@@ -196,11 +196,11 @@ def main():
             print("This system uses RAG (Retrieval Augmented Generation) to provide")
             print("accurate translations with cultural context.")
             print("\nUsage:")
-            print("  python rag.py '<translation_query>'")
-            print("  python rag.py '<translation_query>' --no-rag")
-            print("  python rag.py --stats")
-            print("  python rag.py --seed")
-            print("  python rag.py --help")
+            print("  python -m translation_rag '<translation_query>'")
+            print("  python -m translation_rag '<translation_query>' --no-rag")
+            print("  python -m translation_rag --stats")
+            print("  python -m translation_rag --seed")
+            print("  python -m translation_rag --help")
             sys.exit(0)
 
         if len(sys.argv) >= 2 and sys.argv[1] == "--seed":
@@ -214,15 +214,15 @@ def main():
             print("\nTranslation RAG System")
             print("=====================")
             print("\nUsage:")
-            print("  python rag.py '<translation_query>'")
-            print("  python rag.py '<translation_query>' --no-rag")
-            print("  python rag.py --stats")
-            print("  python rag.py --seed")
-            print("  python rag.py --help")
+            print("  python -m translation_rag '<translation_query>'")
+            print("  python -m translation_rag '<translation_query>' --no-rag")
+            print("  python -m translation_rag --stats")
+            print("  python -m translation_rag --seed")
+            print("  python -m translation_rag --help")
             print("\nExamples:")
-            print("  python rag.py 'How do you say goodbye in Spanish?'")
-            print("  python rag.py 'Translate I love you to French'")
-            print("  python rag.py 'What is the formal way to say hello in German?'")
+            print("  python -m translation_rag 'How do you say goodbye in Spanish?'")
+            print("  python -m translation_rag 'Translate I love you to French'")
+            print("  python -m translation_rag 'What is the formal way to say hello in German?'")
             sys.exit(1)
 
         if sys.argv[1] == "--stats":

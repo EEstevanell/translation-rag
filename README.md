@@ -24,11 +24,14 @@ This is an experimental repository where we're exploring the integration of Retr
 
 ```
 translation-rag/
-├── config.py              # Configuration management
-├── utils.py               # Utility functions
-├── pipeline.py            # Reusable RAG pipeline setup
-├── rag.py                 # Main translation RAG interface
-├── translation_memory.py  # Translation memory management
+├── translation_rag/
+│   ├── __init__.py        # Package initializer
+│   ├── __main__.py        # Enables `python -m translation_rag`
+│   ├── cli.py             # Command line interface
+│   ├── config.py          # Configuration management
+│   ├── pipeline.py        # Reusable RAG pipeline
+│   ├── translation_memory.py  # Translation memory helpers
+│   └── utils.py           # Utility functions
 ├── seed_memory/           # Sample translation memories (generated with Claude Sonnet 4)
 │   ├── en_de.json         # English-German pairs
 │   ├── en_es.json         # English-Spanish pairs
@@ -64,7 +67,7 @@ MODEL_NAME=accounts/fireworks/models/llama4-scout-instruct-basic
 
 3. **Test the setup**:
 ```bash
-python rag.py "How do you say hello in Spanish?"
+python -m translation_rag "How do you say hello in Spanish?"
 ```
 
 ## Testing Different Approaches
@@ -72,31 +75,31 @@ python rag.py "How do you say hello in Spanish?"
 ### Basic RAG vs Direct LLM
 ```bash
 # Using RAG (retrieves similar examples from translation memory)
-python rag.py "How do you say 'thank you' in Italian?"
+python -m translation_rag "How do you say 'thank you' in Italian?"
 
 # Direct LLM (no retrieval)
-python rag.py "How do you say 'thank you' in Italian?" --no-rag
+python -m translation_rag "How do you say 'thank you' in Italian?" --no-rag
 ```
 
 ### Experimenting with Different Queries
 ```bash
 # Test cultural context awareness
-python rag.py "What's the formal way to greet someone in German?"
+python -m translation_rag "What's the formal way to greet someone in German?"
 
 # Test formality levels
-python rag.py "How do I politely decline a meeting in Spanish?"
+python -m translation_rag "How do I politely decline a meeting in Spanish?"
 
 # Test technical translations
-python rag.py "Translate 'machine learning algorithm' to French"
+python -m translation_rag "Translate 'machine learning algorithm' to French"
 ```
 
 ### System Analysis
 ```bash
 # Show retrieval statistics
-python rag.py --stats
+python -m translation_rag --stats
 
 # Reinitialize with seed data
-python rag.py --seed
+python -m translation_rag --seed
 ```
 
 ## What We've Learned So Far
@@ -138,7 +141,7 @@ Enhanced Translation Response
 
 ### Adding New Translation Pairs
 1. Create new JSON files in `seed_memory/` following the existing format
-2. Run `python rag.py --seed` to update the vector database
+2. Run `python -m translation_rag --seed` to update the vector database
 
 ### Testing New Embedding Models
 Update the embedding configuration in `config.py` or environment variables:
@@ -147,7 +150,7 @@ EMBEDDING_MODEL=your-preferred-model
 ```
 
 ### Experimenting with Different Retrievers
-The `pipeline.py` module provides a flexible base for trying different retrieval strategies.
+The `translation_rag.pipeline` module provides a flexible base for trying different retrieval strategies.
 
 ## Development Notes
 

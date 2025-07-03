@@ -76,7 +76,8 @@ class TranslationMemory:
             translated.append(self.translate_sentence(sent, source_lang, target_lang))
         return " ".join(translated)
 
-DEFAULT_MEMORY_DIR = Path(__file__).resolve().parent / "seed_memory"
+# Seed data lives in the repository root
+DEFAULT_MEMORY_DIR = Path(__file__).resolve().parents[1] / "seed_memory"
 
 
 def load_fake_memory(directory: Path | str = DEFAULT_MEMORY_DIR) -> List[dict]:

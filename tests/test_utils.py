@@ -1,5 +1,5 @@
 import os
-from utils import save_translation_data, load_translation_data, create_sample_translation_data
+from translation_rag.utils import save_translation_data, load_translation_data, create_sample_translation_data
 
 
 def test_save_translation_data_no_directory(tmp_path, monkeypatch):

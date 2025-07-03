@@ -1,5 +1,5 @@
 try:
-    from pipeline import RAGPipeline, get_embeddings
+    from translation_rag.pipeline import RAGPipeline, get_embeddings
     from langchain.llms.base import LLM
 except Exception:  # pragma: no cover - skip if deps missing
     import pytest
@@ -30,7 +30,7 @@ def test_pipeline_basic(tmp_path):
 def test_pipeline_with_memory(tmp_path):
     embeddings = get_embeddings("all-MiniLM-L6-v2")
     pipeline = RAGPipeline(EchoLLM(), embeddings, persist_directory=str(tmp_path))
-    from translation_memory import load_fake_memory, memory_to_documents
+    from translation_rag.translation_memory import load_fake_memory, memory_to_documents
 
     texts, metas = memory_to_documents(load_fake_memory())
     pipeline.add_documents(texts, metas)
