@@ -177,14 +177,28 @@ def get_supported_languages() -> Dict[str, str]:
     }
 
 
-DEFAULT_SYSTEM_MESSAGE = "You are a professional translator."
+DEFAULT_SYSTEM_PROMPT_TEMPLATE = "system_prompt.jinja"
+
+
+def render_system_prompt(
+    source_lang: str,
+    target_lang: str,
+    template_str: Optional[str] = None,
+) -> str:
+    """Render the system prompt inserting the requested languages."""
+    if template_str is None:
+        template = _jinja_env.get_template(DEFAULT_SYSTEM_PROMPT_TEMPLATE)
+    else:
+        from jinja2 import Template
+        template = Template(template_str)
+    return template.render(source_lang=source_lang, target_lang=target_lang)
 
 
 def render_translation_prompt(
     text: str,
     source_lang: str,
     target_lang: str,
-    system_message: str = DEFAULT_SYSTEM_MESSAGE,
+    system_message: str,
 ) -> str:
     """Render the translation prompt using the Jinja template."""
     template = _jinja_env.get_template("translation_prompt.jinja")
