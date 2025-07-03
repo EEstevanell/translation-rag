@@ -80,19 +80,34 @@ class RAGPipeline:
             input_variables=["context", "question"],
         )
 
-    def add_documents(self, texts: List[str], metadatas: Optional[List[dict]] = None) -> None:
-        """Add texts to the vector store."""
+    def add_documents(
+        self, texts: List[str], metadatas: Optional[List[dict]] = None, batch_size: int = 128
+    ) -> None:
+        """Add texts to the vector store.
+
+        Fireworks embeddings have a batch limit of 256 rows, so we add
+        documents in manageable batches to avoid errors when a large
+        number of texts is supplied.
+        """
         documents: List[Document] = []
         for i, text in enumerate(texts):
             for chunk in self.text_splitter.split_text(text):
                 metadata = metadatas[i] if metadatas and i < len(metadatas) else {}
                 documents.append(Document(page_content=chunk, metadata=metadata))
 
+        if not documents:
+            return
+
+        first_batch = documents[:batch_size]
         self.vectorstore = Chroma.from_documents(
-            documents=documents,
+            documents=first_batch,
             embedding=self.embeddings,
             persist_directory=self.persist_directory,
         )
+        for i in range(batch_size, len(documents), batch_size):
+            batch_docs = documents[i : i + batch_size]
+            self.vectorstore.add_documents(batch_docs)
+
         self.vectorstore.persist()
 
     def query(self, question: str, use_rag: bool = True, k: int = 3) -> str:
