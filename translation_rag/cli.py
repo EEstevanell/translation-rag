@@ -13,7 +13,8 @@ from .utils import (
     format_translation_examples,
     setup_sample_data_file,
     get_supported_languages,
-    DEFAULT_SYSTEM_MESSAGE,
+    DEFAULT_SYSTEM_PROMPT_TEMPLATE,
+    render_system_prompt,
 )
 from .pipeline import RAGPipeline, create_llm, get_embeddings
 from .logging_utils import get_logger
@@ -184,7 +185,7 @@ Italian: Vorrei programmare una riunione"""
         text: str,
         target_lang: str,
         source_lang: Optional[str] = None,
-        system_message: str = DEFAULT_SYSTEM_MESSAGE,
+        system_message: str = DEFAULT_SYSTEM_PROMPT_TEMPLATE,
         use_rag: bool = True,
     ) -> str:
         """Translate text using the underlying pipeline."""
@@ -195,7 +196,8 @@ Italian: Vorrei programmare una riunione"""
         if src_lang != "unknown":
             metadata_filter = {"source_lang": src_lang, "target_lang": target_lang}
 
-        prompt = render_translation_prompt(text, src_lang, target_lang, system_message)
+        system_msg = render_system_prompt(src_lang, target_lang, system_message)
+        prompt = render_translation_prompt(text, src_lang, target_lang, system_msg)
         return self.pipeline.query(
             prompt,
             use_rag=use_rag,
@@ -236,6 +238,7 @@ def main():
             print("accurate translations with cultural context.")
             print("\nUsage:")
             print("  python -m translation_rag '<text>' --from SRC --to TGT [--system MESSAGE]")
+            print("       (MESSAGE can use {{ source_lang }} and {{ target_lang }} placeholders)")
             print("  python -m translation_rag '<translation_query>' --no-rag")
             print("  python -m translation_rag --stats")
             print("  python -m translation_rag --seed")
@@ -251,7 +254,7 @@ def main():
 
         target_lang = None
         source_lang = None
-        system_message = DEFAULT_SYSTEM_MESSAGE
+        system_message = DEFAULT_SYSTEM_PROMPT_TEMPLATE
         if "--to" in sys.argv:
             idx = sys.argv.index("--to")
             if idx + 1 < len(sys.argv):
@@ -273,6 +276,7 @@ def main():
             print("=====================")
             print("\nUsage:")
             print("  python -m translation_rag '<text>' --from SRC --to TGT [--system MESSAGE]")
+            print("       (MESSAGE can use {{ source_lang }} and {{ target_lang }} placeholders)")
             print("  python -m translation_rag '<translation_query>' --no-rag")
             print("  python -m translation_rag --stats")
             print("  python -m translation_rag --seed")

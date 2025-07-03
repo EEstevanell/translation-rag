@@ -4,6 +4,7 @@ from translation_rag.utils import (
     load_translation_data,
     create_sample_translation_data,
     render_translation_prompt,
+    render_system_prompt,
 )
 
 
@@ -18,6 +19,12 @@ def test_save_translation_data_no_directory(tmp_path, monkeypatch):
 
 
 def test_render_translation_prompt_basic():
-    prompt = render_translation_prompt("Hello", "en", "es")
+    system_msg = render_system_prompt("en", "es")
+    prompt = render_translation_prompt("Hello", "en", "es", system_msg)
     assert "en" in prompt and "es" in prompt
+
+
+def test_render_system_prompt_inserts_langs():
+    msg = render_system_prompt("de", "fr")
+    assert "de" in msg and "fr" in msg
 
