@@ -21,7 +21,9 @@ def load_translation_data(file_path: str) -> List[Dict[str, Any]]:
 def save_translation_data(data: List[Dict[str, Any]], file_path: str) -> bool:
     """Save translation data to a JSON file."""
     try:
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        directory = os.path.dirname(file_path)
+        if directory:
+            os.makedirs(directory, exist_ok=True)
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
         return True
