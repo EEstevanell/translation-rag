@@ -12,6 +12,8 @@ from langchain.prompts import PromptTemplate
 from langchain_fireworks import ChatFireworks
 from langchain_community.vectorstores import Chroma
 
+from .logging_utils import get_logger
+
 # Embedding imports happen lazily in ``get_embeddings`` to avoid heavy
 # dependencies during tests.
 
@@ -67,6 +69,7 @@ class RAGPipeline:
         self.llm = llm
         self.embeddings = embeddings
         self.persist_directory = persist_directory
+        self.logger = get_logger()
         self.vectorstore: Optional[Chroma] = None
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=chunk_size, chunk_overlap=chunk_overlap, length_function=len
@@ -96,6 +99,7 @@ class RAGPipeline:
                 documents.append(Document(page_content=chunk, metadata=metadata))
 
         if not documents:
+            self.logger.debug("No documents to add to the vector store")
             return
 
         first_batch = documents[:batch_size]
@@ -109,6 +113,7 @@ class RAGPipeline:
             self.vectorstore.add_documents(batch_docs)
 
         self.vectorstore.persist()
+        self.logger.info(f"Added {len(documents)} documents to vector store")
 
     def query(
         self,
@@ -118,6 +123,7 @@ class RAGPipeline:
         metadata_filter: Optional[dict] = None,
     ) -> str:
         """Query the pipeline with optional metadata filtering."""
+        self.logger.info(f"Query: {question} | use_rag={use_rag}")
         if use_rag and self.vectorstore:
             search_kwargs = {"k": k}
             if metadata_filter:
@@ -129,8 +135,12 @@ class RAGPipeline:
                 retriever=retriever,
                 chain_type_kwargs={"prompt": self.prompt_template},
             )
-            return qa_chain.run(question)
+            result = qa_chain.run(question)
+            self.logger.debug(f"RAG response: {result}")
+            return result
 
         response = self.llm.invoke(question)
-        return response.content if hasattr(response, "content") else str(response)
+        result = response.content if hasattr(response, "content") else str(response)
+        self.logger.debug(f"LLM response: {result}")
+        return result
 

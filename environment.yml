@@ -14,3 +14,4 @@ dependencies:
       - sentence-transformers  # For better embeddings
       - huggingface-hub        # HuggingFace integration
       - transformers           # For HuggingFace embeddings
+      - loguru                 # Simple logging utility

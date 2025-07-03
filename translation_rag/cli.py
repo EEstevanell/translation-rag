@@ -10,14 +10,16 @@ from .utils import (
     get_supported_languages,
 )
 from .pipeline import RAGPipeline, create_llm, get_embeddings
+from .logging_utils import get_logger
 from langchain.prompts import PromptTemplate
 
 class TranslationRAG:
     """Translation RAG system with ChromaDB integration."""
-    
+
     def __init__(self, config_file: Optional[str] = None):
         """Initialize the Translation RAG system."""
         Config.validate()
+        self.logger = get_logger()
         self.config = Config
         self.setup_pipeline()
         self.load_translation_data()
@@ -245,6 +247,7 @@ def main():
 
         response = rag.query(query, use_rag=use_rag)
         print(f"\nResponse:\n{response}")
+        rag.logger.info(f"Final response: {response}")
 
         if "--stats" in sys.argv:
             rag.display_stats()
