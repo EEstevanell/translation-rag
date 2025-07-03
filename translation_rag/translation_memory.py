@@ -99,13 +99,23 @@ def load_fake_memory(directory: Path | str = DEFAULT_MEMORY_DIR) -> List[dict]:
 
 
 def memory_to_documents(entries: Iterable[dict]) -> tuple[list[str], list[dict]]:
-    """Convert memory entries to texts and metadatas for the RAG pipeline."""
+    """Convert memory entries to texts and metadatas for the RAG pipeline.
+
+    The returned text for each document is only the source sentence so that
+    semantic matching is performed on the original language content.  The
+    corresponding target sentence is stored in the metadata for later use when
+    building context for the LLM prompt.  This allows filtering by language
+    while keeping embeddings language-specific.
+    """
     texts: list[str] = []
     metadatas: list[dict] = []
     for item in entries:
-        texts.append(f"{item['source_sentence']} -> {item['target_sentence']}")
-        metadatas.append({
-            "source_lang": item["source_lang"],
-            "target_lang": item["target_lang"],
-        })
+        texts.append(item["source_sentence"])
+        metadatas.append(
+            {
+                "source_lang": item["source_lang"],
+                "target_lang": item["target_lang"],
+                "target_sentence": item["target_sentence"],
+            }
+        )
     return texts, metadatas
