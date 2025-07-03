@@ -11,6 +11,7 @@ from langchain.schema import Document
 from langchain.prompts import PromptTemplate
 from langchain_fireworks import ChatFireworks
 from langchain_community.vectorstores import Chroma
+from chromadb.config import Settings
 
 from .logging_utils import get_logger
 
@@ -107,6 +108,7 @@ class RAGPipeline:
             documents=first_batch,
             embedding=self.embeddings,
             persist_directory=self.persist_directory,
+            client_settings=Settings(anonymized_telemetry=False),
         )
         for i in range(batch_size, len(documents), batch_size):
             batch_docs = documents[i : i + batch_size]
@@ -131,13 +133,24 @@ class RAGPipeline:
             if metadata_filter:
                 search_kwargs["filter"] = metadata_filter
             retriever = self.vectorstore.as_retriever(search_kwargs=search_kwargs)
+
+            # Log retrieved documents for debugging
+            retrieved = retriever.get_relevant_documents(question)
+            if retrieved:
+                for doc in retrieved:
+                    preview = doc.page_content.replace("\n", " ")[:80]
+                    self.logger.debug(f"Retrieved: {preview} | meta={doc.metadata}")
+            else:
+                self.logger.debug("No relevant documents retrieved")
+
             qa_chain = RetrievalQA.from_chain_type(
                 llm=self.llm,
                 chain_type="stuff",
                 retriever=retriever,
                 chain_type_kwargs={"prompt": self.prompt_template},
             )
-            result = qa_chain.run(question)
+            result_dict = qa_chain.invoke({"query": question})
+            result = result_dict["result"] if isinstance(result_dict, dict) else result_dict
             self.logger.debug(f"RAG response: {result}")
             return result
 
