@@ -13,6 +13,7 @@ from .utils import (
     format_translation_examples,
     setup_sample_data_file,
     get_supported_languages,
+    DEFAULT_SYSTEM_MESSAGE,
 )
 from .pipeline import RAGPipeline, create_llm, get_embeddings
 from .logging_utils import get_logger
@@ -183,6 +184,7 @@ Italian: Vorrei programmare una riunione"""
         text: str,
         target_lang: str,
         source_lang: Optional[str] = None,
+        system_message: str = DEFAULT_SYSTEM_MESSAGE,
         use_rag: bool = True,
     ) -> str:
         """Translate text using the underlying pipeline."""
@@ -193,7 +195,7 @@ Italian: Vorrei programmare una riunione"""
         if src_lang != "unknown":
             metadata_filter = {"source_lang": src_lang, "target_lang": target_lang}
 
-        prompt = render_translation_prompt(text, src_lang, target_lang)
+        prompt = render_translation_prompt(text, src_lang, target_lang, system_message)
         return self.pipeline.query(
             prompt,
             use_rag=use_rag,
@@ -233,7 +235,7 @@ def main():
             print("This system uses RAG (Retrieval Augmented Generation) to provide")
             print("accurate translations with cultural context.")
             print("\nUsage:")
-            print("  python -m translation_rag '<translation_query>' [--to LANG]")
+            print("  python -m translation_rag '<text>' --from SRC --to TGT [--system MESSAGE]")
             print("  python -m translation_rag '<translation_query>' --no-rag")
             print("  python -m translation_rag --stats")
             print("  python -m translation_rag --seed")
@@ -248,25 +250,37 @@ def main():
         rag = TranslationRAG()
 
         target_lang = None
+        source_lang = None
+        system_message = DEFAULT_SYSTEM_MESSAGE
         if "--to" in sys.argv:
             idx = sys.argv.index("--to")
             if idx + 1 < len(sys.argv):
                 target_lang = sys.argv[idx + 1]
+                del sys.argv[idx : idx + 2]
+        if "--from" in sys.argv:
+            idx = sys.argv.index("--from")
+            if idx + 1 < len(sys.argv):
+                source_lang = sys.argv[idx + 1]
+                del sys.argv[idx : idx + 2]
+        if "--system" in sys.argv:
+            idx = sys.argv.index("--system")
+            if idx + 1 < len(sys.argv):
+                system_message = sys.argv[idx + 1]
                 del sys.argv[idx : idx + 2]
 
         if len(sys.argv) < 2:
             print("\nTranslation RAG System")
             print("=====================")
             print("\nUsage:")
-            print("  python -m translation_rag '<translation_query>' [--to LANG]")
+            print("  python -m translation_rag '<text>' --from SRC --to TGT [--system MESSAGE]")
             print("  python -m translation_rag '<translation_query>' --no-rag")
             print("  python -m translation_rag --stats")
             print("  python -m translation_rag --seed")
             print("  python -m translation_rag --help")
             print("\nExamples:")
-            print("  python -m translation_rag 'How do you say goodbye in Spanish?'")
-            print("  python -m translation_rag 'I love you' --to fr")
-            print("  python -m translation_rag 'What is the formal way to say hello in German?'")
+            print("  python -m translation_rag 'Hello' --from en --to es")
+            print("  python -m translation_rag 'Guten Morgen' --from de --to en --system 'You are a polite translator.'")
+            print("  python -m translation_rag 'Bonjour' --from fr --to it")
             sys.exit(1)
 
         if sys.argv[1] == "--stats":
@@ -282,10 +296,16 @@ def main():
         print(f"Using RAG: {use_rag}")
         print("-" * 60)
 
-        if target_lang:
-            response = rag.translate(query, target_lang, use_rag=use_rag)
+        if target_lang and source_lang:
+            response = rag.translate(
+                query,
+                target_lang,
+                source_lang=source_lang,
+                system_message=system_message,
+                use_rag=use_rag,
+            )
         else:
-            response = rag.query(query, use_rag=use_rag)
+            raise ValueError("Both --from and --to must be provided for translation.")
         print(f"\nResponse:\n{response}")
         rag.logger.info(f"Final response: {response}")
 

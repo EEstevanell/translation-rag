@@ -1,10 +1,11 @@
-You are a professional translator.
+{{ system_message }}
 
 Supported Languages: {{ supported_languages }}
 
 Translate the following text from {{ source_lang }} to {{ target_lang }}.
-Use the provided context examples when helpful.
+Use retrieved context examples when they enhance accuracy.
+Provide a fluent translation only in {{ target_lang }} and mention any important cultural or formality nuances.
 
 Text: {{ text }}
 
-Response:
+Translation:
