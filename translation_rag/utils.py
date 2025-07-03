@@ -4,6 +4,11 @@ import json
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 from langdetect import detect, LangDetectException
+from jinja2 import Environment, FileSystemLoader
+
+# Jinja environment for rendering prompt templates
+TEMPLATE_DIR = Path(__file__).resolve().parent / "templates"
+_jinja_env = Environment(loader=FileSystemLoader(TEMPLATE_DIR), autoescape=False)
 
 
 def load_translation_data(file_path: str) -> List[Dict[str, Any]]:
@@ -170,6 +175,17 @@ def get_supported_languages() -> Dict[str, str]:
         'ar': 'Arabic',
         'hi': 'Hindi'
     }
+
+
+def render_translation_prompt(text: str, source_lang: str, target_lang: str) -> str:
+    """Render the translation prompt using the Jinja template."""
+    template = _jinja_env.get_template("translation_prompt.jinja")
+    return template.render(
+        text=text,
+        source_lang=source_lang,
+        target_lang=target_lang,
+        supported_languages=", ".join(get_supported_languages().values()),
+    )
 
 
 def detect_language(text: str) -> str:

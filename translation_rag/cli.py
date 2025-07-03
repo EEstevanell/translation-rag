@@ -170,6 +170,29 @@ Italian: Vorrei programmare una riunione"""
             response = self.pipeline.llm.invoke(enhanced_prompt)
             response = response.content if hasattr(response, "content") else str(response)
         return response
+
+    def translate(
+        self,
+        text: str,
+        target_lang: str,
+        source_lang: Optional[str] = None,
+        use_rag: bool = True,
+    ) -> str:
+        """Translate text using the underlying pipeline."""
+        from .utils import detect_language, render_translation_prompt
+
+        src_lang = source_lang or detect_language(text)
+        metadata_filter = None
+        if src_lang != "unknown":
+            metadata_filter = {"source_lang": src_lang, "target_lang": target_lang}
+
+        prompt = render_translation_prompt(text, src_lang, target_lang)
+        return self.pipeline.query(
+            prompt,
+            use_rag=use_rag,
+            k=4,
+            metadata_filter=metadata_filter,
+        )
     
     def display_stats(self):
         """Display system statistics."""
@@ -203,7 +226,7 @@ def main():
             print("This system uses RAG (Retrieval Augmented Generation) to provide")
             print("accurate translations with cultural context.")
             print("\nUsage:")
-            print("  python -m translation_rag '<translation_query>'")
+            print("  python -m translation_rag '<translation_query>' [--to LANG]")
             print("  python -m translation_rag '<translation_query>' --no-rag")
             print("  python -m translation_rag --stats")
             print("  python -m translation_rag --seed")
@@ -217,18 +240,25 @@ def main():
 
         rag = TranslationRAG()
 
+        target_lang = None
+        if "--to" in sys.argv:
+            idx = sys.argv.index("--to")
+            if idx + 1 < len(sys.argv):
+                target_lang = sys.argv[idx + 1]
+                del sys.argv[idx : idx + 2]
+
         if len(sys.argv) < 2:
             print("\nTranslation RAG System")
             print("=====================")
             print("\nUsage:")
-            print("  python -m translation_rag '<translation_query>'")
+            print("  python -m translation_rag '<translation_query>' [--to LANG]")
             print("  python -m translation_rag '<translation_query>' --no-rag")
             print("  python -m translation_rag --stats")
             print("  python -m translation_rag --seed")
             print("  python -m translation_rag --help")
             print("\nExamples:")
             print("  python -m translation_rag 'How do you say goodbye in Spanish?'")
-            print("  python -m translation_rag 'Translate I love you to French'")
+            print("  python -m translation_rag 'I love you' --to fr")
             print("  python -m translation_rag 'What is the formal way to say hello in German?'")
             sys.exit(1)
 
@@ -240,10 +270,15 @@ def main():
         use_rag = "--no-rag" not in sys.argv
 
         print(f"\nTranslation Query: {query}")
+        if target_lang:
+            print(f"Target Language: {target_lang}")
         print(f"Using RAG: {use_rag}")
         print("-" * 60)
 
-        response = rag.query(query, use_rag=use_rag)
+        if target_lang:
+            response = rag.translate(query, target_lang, use_rag=use_rag)
+        else:
+            response = rag.query(query, use_rag=use_rag)
         print(f"\nResponse:\n{response}")
 
         if "--stats" in sys.argv:
