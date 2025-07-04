@@ -6,7 +6,6 @@ from typing import List, Optional
 import os
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.chains import RetrievalQA
 from langchain.schema import Document
 from langchain.prompts import PromptTemplate
 from langchain_fireworks import ChatFireworks
@@ -84,6 +83,31 @@ class RAGPipeline:
             input_variables=["context", "question"],
         )
 
+    def load_vectorstore(self) -> bool:
+        """Load an existing Chroma vector store if present."""
+        if not os.path.isdir(self.persist_directory):
+            return False
+        try:
+            self.vectorstore = Chroma(
+                embedding_function=self.embeddings,
+                persist_directory=self.persist_directory,
+                client_settings=Settings(
+                    anonymized_telemetry=False,
+                    allow_reset=True,
+                    is_persistent=True,
+                    persist_directory=self.persist_directory,
+                ),
+            )
+            # Trigger collection to check that data exists
+            count = self.vectorstore._collection.count()
+            if count:
+                self.logger.info(f"Loaded {count} documents from existing vector store")
+                return True
+        except Exception as exc:
+            self.logger.debug(f"Could not load existing vector store: {exc}")
+        self.vectorstore = None
+        return False
+
     @staticmethod
     def _build_filter(metadata_filter: Optional[dict]) -> Optional[dict]:
         """Convert simple key/value filters to the Chroma structured format."""
@@ -151,7 +175,7 @@ class RAGPipeline:
                 search_kwargs["filter"] = self._build_filter(metadata_filter)
             retriever = self.vectorstore.as_retriever(search_kwargs=search_kwargs)
 
-            # Log retrieved documents for debugging
+            # Retrieve and log documents for debugging
             retrieved = retriever.get_relevant_documents(question)
             if retrieved:
                 for doc in retrieved:
@@ -160,14 +184,22 @@ class RAGPipeline:
             else:
                 self.logger.debug("No relevant documents retrieved")
 
-            qa_chain = RetrievalQA.from_chain_type(
-                llm=self.llm,
-                chain_type="stuff",
-                retriever=retriever,
-                chain_type_kwargs={"prompt": self.prompt_template},
-            )
-            result_dict = qa_chain.invoke({"query": question})
-            result = result_dict["result"] if isinstance(result_dict, dict) else result_dict
+            # Build context string using retrieved documents. If a target sentence
+            # is present in metadata, include it so the LLM sees the full
+            # translation pair, while embeddings remain based only on the source
+            # sentence stored in the vector database.
+            context_parts = []
+            for doc in retrieved:
+                tgt = doc.metadata.get("target_sentence")
+                if tgt:
+                    context_parts.append(f"{doc.page_content} -> {tgt}")
+                else:
+                    context_parts.append(doc.page_content)
+            context = "\n".join(context_parts)
+
+            prompt = self.prompt_template.format(context=context, question=question)
+            response = self.llm.invoke(prompt)
+            result = response.content if hasattr(response, "content") else str(response)
             self.logger.debug(f"RAG response: {result}")
             return result
 

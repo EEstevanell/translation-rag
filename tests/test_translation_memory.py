@@ -16,3 +16,5 @@ def test_memory_to_documents():
     data = load_fake_memory()
     texts, metas = memory_to_documents(data)
     assert len(texts) == len(metas) == len(data)
+    assert texts[0] == data[0]["source_sentence"]
+    assert metas[0]["target_sentence"] == data[0]["target_sentence"]

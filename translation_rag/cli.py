@@ -29,7 +29,9 @@ class TranslationRAG:
         self.logger = get_logger()
         self.config = Config
         self.setup_pipeline()
-        self.load_translation_data()
+        # Load existing ChromaDB state if available
+        self.pipeline.load_vectorstore()
+        self.vectorstore = self.pipeline.vectorstore
     
     def setup_pipeline(self) -> None:
         """Create the reusable RAG pipeline."""
@@ -75,6 +77,12 @@ class TranslationRAG:
     
     def load_translation_data(self):
         """Load translation data from file or create sample data."""
+        # Try loading an existing vector store to avoid reseeding each run
+        if self.pipeline.load_vectorstore():
+            self.vectorstore = self.pipeline.vectorstore
+            print("✓ Loaded existing translation memory from ChromaDB")
+            return
+
         # Ensure sample data file exists
         setup_sample_data_file()
         
@@ -108,6 +116,7 @@ class TranslationRAG:
         metadatas.extend(mem_meta)
 
         self.add_documents(documents, metadatas)
+        print(f"✓ Added {len(documents)} documents to ChromaDB")
     
     def add_documents(self, texts: List[str], metadatas: Optional[List[dict]] = None):
         """Add documents to the underlying pipeline."""
@@ -246,11 +255,14 @@ def main():
             sys.exit(0)
 
         if len(sys.argv) >= 2 and sys.argv[1] == "--seed":
-            TranslationRAG()
+            rag = TranslationRAG()
+            rag.load_translation_data()
             print("\u2713 Seeded example translations into ChromaDB")
             sys.exit(0)
 
         rag = TranslationRAG()
+        if not rag.vectorstore:
+            print("⚠️  No translation memory found. Run 'python -m translation_rag --seed' to load sample data.")
 
         target_lang = None
         source_lang = None

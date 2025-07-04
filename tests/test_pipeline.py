@@ -37,6 +37,16 @@ def test_pipeline_with_memory(tmp_path):
     assert pipeline.vectorstore is not None
 
 
+def test_load_existing_vectorstore(tmp_path):
+    embeddings = get_embeddings("all-MiniLM-L6-v2")
+    pipeline = RAGPipeline(EchoLLM(), embeddings, persist_directory=str(tmp_path))
+    pipeline.add_documents(["hello"], metadatas=[{"lang": "en"}])
+
+    pipeline2 = RAGPipeline(EchoLLM(), embeddings, persist_directory=str(tmp_path))
+    assert pipeline2.load_vectorstore()
+    assert pipeline2.vectorstore is not None
+
+
 def test_build_filter_conversion():
     multi = RAGPipeline._build_filter({"source_lang": "en", "target_lang": "es"})
     assert multi == {

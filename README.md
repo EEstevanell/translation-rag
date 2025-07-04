@@ -70,6 +70,11 @@ MODEL_NAME=accounts/fireworks/models/llama4-scout-instruct-basic
 python -m translation_rag "How do you say hello in Spanish?"
 ```
 
+4. **Load the sample translation memory** (run once):
+```bash
+python -m translation_rag --seed
+```
+
 ## Testing Different Approaches
 
 ### Basic RAG vs Direct LLM
@@ -104,7 +109,7 @@ python -m translation_rag "How do you say 'thank you' in Italian?" --from en --t
 # Show retrieval statistics
 python -m translation_rag --stats
 
-# Reinitialize with seed data
+# Initialize or update the translation memory
 python -m translation_rag --seed
 ```
 
@@ -152,7 +157,7 @@ Enhanced Translation Response
 ### Testing New Embedding Models
 Update the embedding configuration in `config.py` or environment variables:
 ```properties
-EMBEDDING_MODEL=your-preferred-model
+EMBEDDING_MODEL=nomic-ai/nomic-embed-text-v1.5
 ```
 
 ### Experimenting with Different Retrievers
