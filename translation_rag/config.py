@@ -25,7 +25,7 @@ class Config:
     ENABLE_REFLECTION = os.getenv('ENABLE_REFLECTION', 'false').lower() == 'true'
     
     # Embedding Configuration
-    EMBEDDING_MODEL = os.getenv('EMBEDDING_MODEL', 'all-MiniLM-L6-v2')
+    EMBEDDING_MODEL = os.getenv('EMBEDDING_MODEL', 'nomic-ai/nomic-embed-text-v1.5')
     
     @classmethod
     def validate(cls):

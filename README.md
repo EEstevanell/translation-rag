@@ -152,7 +152,7 @@ Enhanced Translation Response
 ### Testing New Embedding Models
 Update the embedding configuration in `config.py` or environment variables:
 ```properties
-EMBEDDING_MODEL=your-preferred-model
+EMBEDDING_MODEL=nomic-ai/nomic-embed-text-v1.5
 ```
 
 ### Experimenting with Different Retrievers
