@@ -9,7 +9,9 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document
 from langchain.prompts import PromptTemplate
 from langchain_fireworks import ChatFireworks
-from langchain_community.vectorstores import Chroma
+# Chroma vector store is provided by the separate ``langchain-chroma`` package
+# as of LangChain 0.2.9. Importing from there avoids deprecation warnings.
+from langchain_chroma import Chroma
 from chromadb.config import Settings
 
 from .logging_utils import get_logger
@@ -176,7 +178,10 @@ class RAGPipeline:
             retriever = self.vectorstore.as_retriever(search_kwargs=search_kwargs)
 
             # Retrieve and log documents for debugging
-            retrieved = retriever.get_relevant_documents(question)
+            # ``get_relevant_documents`` was deprecated in langchain 0.1.46.
+            # ``invoke`` returns the same list of documents without the
+            # deprecation warning.
+            retrieved = retriever.invoke(question)
             if retrieved:
                 for doc in retrieved:
                     preview = doc.page_content.replace("\n", " ")[:80]

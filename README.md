@@ -86,6 +86,12 @@ python -m translation_rag "How do you say 'thank you' in Italian?"
 python -m translation_rag "How do you say 'thank you' in Italian?" --no-rag
 ```
 
+You can control how many examples RAG retrieves by passing the `--k` parameter:
+
+```bash
+python -m translation_rag "How do you say 'thank you' in Italian?" --k 5
+```
+
 ### Experimenting with Different Queries
 ```bash
 # Test cultural context awareness

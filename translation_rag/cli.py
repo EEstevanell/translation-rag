@@ -205,14 +205,24 @@ Italian: Vorrei programmare una riunione"""
         self.add_documents(examples, metas)
         print("✓ Added basic translation examples")
     
-    def query(self, question: str, use_rag: bool = True) -> str:
-        """Query the system with enhanced response handling."""
+    def query(self, question: str, use_rag: bool = True, k: int = 4) -> str:
+        """Query the system with enhanced response handling.
+
+        Parameters
+        ----------
+        question: str
+            User query or translation request.
+        use_rag: bool, optional
+            Whether to use the retrieval augmented generation pipeline.
+        k: int, optional
+            Number of documents to retrieve from the vector store.
+        """
         if use_rag:
             from .utils import detect_language
             lang = detect_language(question)
             metadata_filter = {f"lang_{lang}": True} if lang != "unknown" else None
             response = self.pipeline.query(
-                question, use_rag=True, k=4, metadata_filter=metadata_filter
+                question, use_rag=True, k=k, metadata_filter=metadata_filter
             )
         else:
             enhanced_prompt = (
@@ -232,8 +242,25 @@ Italian: Vorrei programmare una riunione"""
         source_lang: Optional[str] = None,
         system_message: str = DEFAULT_SYSTEM_PROMPT_TEMPLATE,
         use_rag: bool = True,
+        k: int = 4,
     ) -> str:
-        """Translate text using the underlying pipeline."""
+        """Translate text using the underlying pipeline.
+
+        Parameters
+        ----------
+        text: str
+            The text to translate.
+        target_lang: str
+            Target language code.
+        source_lang: str, optional
+            Source language code. If not provided, language will be detected.
+        system_message: str, optional
+            Custom system prompt template.
+        use_rag: bool, optional
+            Whether to use retrieval augmented generation.
+        k: int, optional
+            Number of documents to retrieve for RAG context.
+        """
         from .utils import detect_language, render_translation_prompt
 
         src_lang = source_lang or detect_language(text)
@@ -246,7 +273,7 @@ Italian: Vorrei programmare una riunione"""
         return self.pipeline.query(
             prompt,
             use_rag=use_rag,
-            k=4,
+            k=k,
             metadata_filter=metadata_filter,
         )
     
@@ -282,7 +309,7 @@ def main():
             print("This system uses RAG (Retrieval Augmented Generation) to provide")
             print("accurate translations with cultural context.")
             print("\nUsage:")
-            print("  python -m translation_rag '<text>' --from SRC --to TGT [--system MESSAGE]")
+            print("  python -m translation_rag '<text>' --from SRC --to TGT [--system MESSAGE] [--k NUM]")
             print("       (MESSAGE can use {{ source_lang }} and {{ target_lang }} placeholders)")
             print("  python -m translation_rag '<translation_query>' --no-rag")
             print("  python -m translation_rag --stats")
@@ -303,6 +330,7 @@ def main():
         target_lang = None
         source_lang = None
         system_message = DEFAULT_SYSTEM_PROMPT_TEMPLATE
+        rag_k = 4
         if "--to" in sys.argv:
             idx = sys.argv.index("--to")
             if idx + 1 < len(sys.argv):
@@ -318,12 +346,20 @@ def main():
             if idx + 1 < len(sys.argv):
                 system_message = sys.argv[idx + 1]
                 del sys.argv[idx : idx + 2]
+        if "--k" in sys.argv:
+            idx = sys.argv.index("--k")
+            if idx + 1 < len(sys.argv):
+                try:
+                    rag_k = int(sys.argv[idx + 1])
+                except ValueError:
+                    raise ValueError("--k requires an integer value")
+                del sys.argv[idx : idx + 2]
 
         if len(sys.argv) < 2:
             print("\nTranslation RAG System")
             print("=====================")
             print("\nUsage:")
-            print("  python -m translation_rag '<text>' --from SRC --to TGT [--system MESSAGE]")
+            print("  python -m translation_rag '<text>' --from SRC --to TGT [--system MESSAGE] [--k NUM]")
             print("       (MESSAGE can use {{ source_lang }} and {{ target_lang }} placeholders)")
             print("  python -m translation_rag '<translation_query>' --no-rag")
             print("  python -m translation_rag --stats")
@@ -346,6 +382,8 @@ def main():
         if target_lang:
             print(f"Target Language: {target_lang}")
         print(f"Using RAG: {use_rag}")
+        if use_rag:
+            print(f"Retrieval k: {rag_k}")
         print("-" * 60)
 
         if target_lang and source_lang:
@@ -355,6 +393,7 @@ def main():
                 source_lang=source_lang,
                 system_message=system_message,
                 use_rag=use_rag,
+                k=rag_k,
             )
         else:
             raise ValueError("Both --from and --to must be provided for translation.")
