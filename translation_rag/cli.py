@@ -203,17 +203,22 @@ Italian: Vorrei programmare una riunione"""
                 # Filter by source and target language to get relevant examples
                 metadata_filter = {"source_lang": src_lang, "target_lang": target_lang}
             
-            search_kwargs = {"k": k}
-            if metadata_filter:
-                search_kwargs["filter"] = self.pipeline._build_filter(metadata_filter)
-            retriever = self.vectorstore.as_retriever(search_kwargs=search_kwargs)
+            # Use similarity search with scores to get similarity information
+            filter_dict = self.pipeline._build_filter(metadata_filter) if metadata_filter else None
+            results_with_scores = self.vectorstore.similarity_search_with_score(
+                text, k=k, filter=filter_dict
+            )
             
-            # Retrieve documents using the text to translate
-            retrieved = retriever.invoke(text)
-            if retrieved:
-                for doc in retrieved:
-                    preview = doc.page_content.replace("\n", " ")[:80]
-                    self.logger.debug(f"Retrieved: {preview} | meta={doc.metadata}")
+            if results_with_scores:
+                self.logger.info(f"Retrieved {len(results_with_scores)} translation examples:")
+                
+                retrieved = []
+                for i, (doc, score) in enumerate(results_with_scores):
+                    # Convert distance to similarity (1 - normalized_distance)
+                    similarity = 1 - score if score <= 1 else 0
+                    preview = doc.page_content.replace("\n", " ")[:60]
+                    self.logger.info(f"  [{i+1}] Similarity: {similarity:.3f} | {preview}...")
+                    retrieved.append(doc)
                 
                 # Build context string using retrieved documents
                 context_parts = []
@@ -225,7 +230,7 @@ Italian: Vorrei programmare una riunione"""
                         context_parts.append(doc.page_content)
                 context = "\n".join(context_parts)
             else:
-                self.logger.debug("No relevant documents retrieved")
+                self.logger.info("No relevant documents retrieved")
                 context = None
 
         system_msg = render_system_prompt(src_lang, target_lang, system_message)

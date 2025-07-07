@@ -191,19 +191,21 @@ class RAGPipeline:
             # Note: Chroma returns distance, where lower values mean higher similarity
             # We need to convert distance to similarity and filter
             filtered_results = []
-            for doc, score in results_with_scores:
+            self.logger.info(f"Retrieved {len(results_with_scores)} documents from vector search:")
+            
+            for i, (doc, score) in enumerate(results_with_scores):
                 # Convert distance to similarity (1 - normalized_distance)
                 # For cosine distance, similarity = 1 - distance
                 similarity = 1 - score if score <= 1 else 0
+                preview = doc.page_content.replace("\n", " ")[:60]
                 
-                self.logger.debug(f"Document similarity: {similarity:.3f} (distance: {score:.3f})")
+                self.logger.info(f"  [{i+1}] Similarity: {similarity:.3f} | {preview}...")
                 
                 if similarity >= Config.SIMILARITY_THRESHOLD:
                     filtered_results.append(doc)
-                    preview = doc.page_content.replace("\n", " ")[:80]
-                    self.logger.debug(f"Retrieved: {preview} | similarity={similarity:.3f} | meta={doc.metadata}")
+                    self.logger.debug(f"✓ Accepted (above threshold {Config.SIMILARITY_THRESHOLD:.3f})")
                 else:
-                    self.logger.debug(f"Filtered out document with similarity {similarity:.3f} below threshold {Config.SIMILARITY_THRESHOLD}")
+                    self.logger.info(f"  ✗ Filtered out (below threshold {Config.SIMILARITY_THRESHOLD:.3f})")
             
             retrieved = filtered_results
             
