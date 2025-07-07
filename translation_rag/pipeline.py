@@ -32,7 +32,7 @@ def get_embeddings(model_name: str):
         print(f"✓ Using Fireworks embeddings with model: {model_name}")
         return FireworksEmbeddings(
             model=model_name,
-            fireworks_api_key=api_key
+            api_key=api_key
         )
     except Exception as e:
         print(f"⚠️  Failed to initialize Fireworks embeddings: {e}")
