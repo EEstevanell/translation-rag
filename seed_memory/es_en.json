@@ -1,20 +1,13 @@
 [
-  {
-    "source_lang": "es",
-    "target_lang": "en",
-    "source_sentence": "¿Cómo estás?",
-    "target_sentence": "How are you?"
-  },
-  {
-    "source_lang": "es",
-    "target_lang": "en",
-    "source_sentence": "Gracias",
-    "target_sentence": "Thank you"
-  },
-  {
-    "source_lang": "es",
-    "target_lang": "en",
-    "source_sentence": "¿Cómo estás hoy?",
-    "target_sentence": "How are you today?"
-  }
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "¿Cómo estás?", "target_sentence": "How are you?"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "Gracias", "target_sentence": "Thank you"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "¿Cómo estás hoy?", "target_sentence": "How are you today?"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "Hasta luego", "target_sentence": "See you later"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "¿Dónde está la estación de tren más cercana?", "target_sentence": "Where is the nearest train station?"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "¿Podrías ayudarme, por favor?", "target_sentence": "Could you help me, please?"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "Hace buen tiempo hoy", "target_sentence": "The weather is nice today"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "¿Cuántos años tienes?", "target_sentence": "How old are you?"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "Necesito indicaciones para llegar al museo", "target_sentence": "I need directions to the museum"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "Te llamaré mañana", "target_sentence": "I'll call you tomorrow"},
+  {"source_lang": "es", "target_lang": "en", "source_sentence": "¿Podría traerme la cuenta, por favor?", "target_sentence": "Could I have the bill, please?"}
 ]

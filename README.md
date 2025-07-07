@@ -35,6 +35,10 @@ translation-rag/
 ├── seed_memory/           # Sample translation memories
 │   ├── en_es.json         # English→Spanish pairs
 │   ├── es_en.json         # Spanish→English pairs
+│   ├── en_fr.json         # English→French pairs
+│   ├── fr_en.json         # French→English pairs
+│   ├── en_de.json         # English→German pairs
+│   ├── de_en.json         # German→English pairs
 │   └── sample.json        # Minimal example data
 ├── environment.yml        # Conda environment specification
 ├── chroma_db/             # ChromaDB storage (created automatically)
@@ -74,12 +78,12 @@ python -m translation_rag "How do you say hello in Spanish?"
 ```bash
 python -m translation_rag --seed
 ```
-This command populates the ChromaDB vector store with a few example translation
-pairs stored under `seed_memory/`. Each pair is saved as an independent
-document using only the source sentence for similarity search. The associated
-target sentence is kept in the document metadata so retrieval can be filtered by
-source and target languages and relevant examples are returned for a given
-language combination.
+This command populates the ChromaDB vector store with several example
+translation pairs stored under `seed_memory/`.  Each pair is saved as an
+independent document using only the source sentence for similarity search. The
+associated target sentence is kept in the document metadata so retrieval can be
+filtered by source and target languages and relevant examples are returned for a
+given language combination.
 
 ## Testing Different Approaches
 

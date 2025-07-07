@@ -1,21 +1,13 @@
 [
-  {
-    "source_lang": "en",
-    "target_lang": "es",
-    "source_sentence": "Good morning",
-    "target_sentence": "Buenos dias"
-  },
-  {
-    "source_lang": "en",
-    "target_lang": "es",
-    "source_sentence": "I would like a cup of coffee",
-    "target_sentence": "Quisiera una taza de cafe"
-  }
-  ,
-  {
-    "source_lang": "en",
-    "target_lang": "es",
-    "source_sentence": "How are you today?",
-    "target_sentence": "¿Cómo estás hoy?"
-  }
+  {"source_lang": "en", "target_lang": "es", "source_sentence": "Good morning", "target_sentence": "Buenos días"},
+  {"source_lang": "en", "target_lang": "es", "source_sentence": "I would like a cup of coffee", "target_sentence": "Quisiera una taza de café"},
+  {"source_lang": "en", "target_lang": "es", "source_sentence": "How are you today?", "target_sentence": "¿Cómo estás hoy?"},
+  {"source_lang": "en", "target_lang": "es", "source_sentence": "See you later", "target_sentence": "Hasta luego"},
+  {"source_lang": "en", "target_lang": "es", "source_sentence": "Where is the nearest train station?", "target_sentence": "¿Dónde está la estación de tren más cercana?"},
+  {"source_lang": "en", "target_lang": "es", "source_sentence": "Could you help me, please?", "target_sentence": "¿Podrías ayudarme, por favor?"},
+  {"source_lang": "en", "target_lang": "es", "source_sentence": "The weather is nice today", "target_sentence": "Hace buen tiempo hoy"},
+  {"source_lang": "en", "target_lang": "es", "source_sentence": "How old are you?", "target_sentence": "¿Cuántos años tienes?"},
+  {"source_lang": "en", "target_lang": "es", "source_sentence": "I need directions to the museum", "target_sentence": "Necesito indicaciones para llegar al museo"},
+  {"source_lang": "en", "target_lang": "es", "source_sentence": "I'll call you tomorrow", "target_sentence": "Te llamaré mañana"},
+  {"source_lang": "en", "target_lang": "es", "source_sentence": "Could I have the bill, please?", "target_sentence": "¿Podría traerme la cuenta, por favor?"}
 ]

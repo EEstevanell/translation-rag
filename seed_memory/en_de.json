@@ -1,0 +1,12 @@
+[
+  {"source_lang": "en", "target_lang": "de", "source_sentence": "Good morning", "target_sentence": "Guten Morgen"},
+  {"source_lang": "en", "target_lang": "de", "source_sentence": "How are you?", "target_sentence": "Wie geht es dir?"},
+  {"source_lang": "en", "target_lang": "de", "source_sentence": "I would like a cup of coffee", "target_sentence": "Ich hätte gern eine Tasse Kaffee"},
+  {"source_lang": "en", "target_lang": "de", "source_sentence": "See you later", "target_sentence": "Bis später"},
+  {"source_lang": "en", "target_lang": "de", "source_sentence": "Where is the bathroom?", "target_sentence": "Wo ist die Toilette?"},
+  {"source_lang": "en", "target_lang": "de", "source_sentence": "Could you help me, please?", "target_sentence": "Könnten Sie mir bitte helfen?"},
+  {"source_lang": "en", "target_lang": "de", "source_sentence": "I need directions to the hotel", "target_sentence": "Ich brauche eine Wegbeschreibung zum Hotel"},
+  {"source_lang": "en", "target_lang": "de", "source_sentence": "The weather is nice today", "target_sentence": "Heute ist schönes Wetter"},
+  {"source_lang": "en", "target_lang": "de", "source_sentence": "I'll call you tomorrow", "target_sentence": "Ich rufe dich morgen an"},
+  {"source_lang": "en", "target_lang": "de", "source_sentence": "Could I have the bill, please?", "target_sentence": "Könnte ich bitte die Rechnung bekommen?"}
+]

@@ -1,0 +1,12 @@
+[
+  {"source_lang": "fr", "target_lang": "en", "source_sentence": "Bonjour", "target_sentence": "Good morning"},
+  {"source_lang": "fr", "target_lang": "en", "source_sentence": "Comment ça va ?", "target_sentence": "How are you?"},
+  {"source_lang": "fr", "target_lang": "en", "source_sentence": "Je voudrais une tasse de thé", "target_sentence": "I would like a cup of tea"},
+  {"source_lang": "fr", "target_lang": "en", "source_sentence": "À plus tard", "target_sentence": "See you later"},
+  {"source_lang": "fr", "target_lang": "en", "source_sentence": "Où se trouve la gare ?", "target_sentence": "Where is the train station?"},
+  {"source_lang": "fr", "target_lang": "en", "source_sentence": "Pourriez-vous m'aider, s'il vous plaît ?", "target_sentence": "Could you help me, please?"},
+  {"source_lang": "fr", "target_lang": "en", "source_sentence": "J'ai besoin d'indications pour le musée", "target_sentence": "I need directions to the museum"},
+  {"source_lang": "fr", "target_lang": "en", "source_sentence": "Il fait beau aujourd'hui", "target_sentence": "The weather is nice today"},
+  {"source_lang": "fr", "target_lang": "en", "source_sentence": "Je t'appellerai demain", "target_sentence": "I'll call you tomorrow"},
+  {"source_lang": "fr", "target_lang": "en", "source_sentence": "L'addition, s'il vous plaît", "target_sentence": "Could I have the bill, please?"}
+]
