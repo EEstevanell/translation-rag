@@ -10,9 +10,6 @@ from typing import List, Optional
 
 from .config import Config
 from .utils import (
-    load_translation_data,
-    format_translation_examples,
-    setup_sample_data_file,
     get_supported_languages,
     DEFAULT_SYSTEM_PROMPT_TEMPLATE,
     render_system_prompt,
@@ -61,82 +58,30 @@ class TranslationRAG:
         print("✓ RAG pipeline configured")
     
     def load_translation_data(self):
-        """Load translation data from file or create sample data."""
+        """Load translation data from seed memory only."""
         # Try loading an existing vector store to avoid reseeding each run
         if self.pipeline.load_vectorstore():
             self.vectorstore = self.pipeline.vectorstore
             print("✓ Loaded existing translation memory from ChromaDB")
             return
 
-        # Load sentence memory from sentences.json
-        documents: List[str] = []
-        metadatas: List[dict] = []
-        
-        # Try to load sentence memory first
-        sentence_data = self.load_sentence_memory()
-        if sentence_data:
-            for sentence in sentence_data:
-                documents.append(sentence["text"])
-                metadatas.append({
-                    "id": sentence.get("id", ""),
-                    "language": sentence.get("language", "unknown"),
-                    "domain": sentence.get("domain", "general"),
-                    "formality": sentence.get("formality", "neutral"),
-                    "source": "sentence_memory"
-                })
-            print(f"✓ Loaded {len(sentence_data)} sentences from sentence memory")
+        # Load only from seed memory
+        from .translation_memory import load_fake_memory, memory_to_documents
+
+        seed_entries = load_fake_memory()
+        if seed_entries:
+            # Convert seed memory entries to documents for the vector store
+            # This stores only the source sentences for semantic matching
+            # while keeping the target sentences in metadata
+            documents, metadatas = memory_to_documents(seed_entries)
+            self.add_documents(documents, metadatas)
+            print(f"✓ Added {len(documents)} translation examples from seed memory")
         else:
-            # Fallback to original behavior if sentence memory is not available
-            # Ensure sample data file exists
-            setup_sample_data_file()
-            
-            # Load translation data
-            data = load_translation_data("translation_data.json")
-            if data:
-                documents.extend(format_translation_examples(data))
-                for item in data:
-                    langs = list(item.get("translations", {}).keys())
-                    lang_flags = {f"lang_{code}": True for code in langs}
-                    metadatas.append(
-                        {
-                            "type": item.get("type", "general"),
-                            "context": item.get("context", "General"),
-                            "formality": item.get("formality", "neutral"),
-                            **lang_flags,
-                        }
-                    )
-                print(f"✓ Loaded {len(data)} translation examples from file")
-            else:
-                basics, basic_meta = self.get_basic_examples()
-                documents.extend(basics)
-                metadatas.extend(basic_meta)
-
-            from .translation_memory import load_fake_memory, memory_to_documents
-
-            mem_texts, mem_meta = memory_to_documents(load_fake_memory())
-            documents.extend(mem_texts)
-            metadatas.extend(mem_meta)
-
-        self.add_documents(documents, metadatas)
-        print(f"✓ Added {len(documents)} documents to ChromaDB")
-    
-    def load_sentence_memory(self):
-        """Load sentence memory from sentences.json."""
-        sentence_file = "sentence_memory/sentences.json"
-        try:
-            with open(sentence_file, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-                if isinstance(data, list):
-                    return data
-                else:
-                    print(f"Warning: Expected list format in {sentence_file}")
-                    return []
-        except FileNotFoundError:
-            print(f"Sentence memory file not found: {sentence_file}")
-            return []
-        except json.JSONDecodeError as e:
-            print(f"Error parsing JSON file {sentence_file}: {e}")
-            return []
+            print("⚠️  No seed memory found. Please check the seed_memory directory.")
+            # Add basic examples as fallback
+            basics, basic_meta = self.get_basic_examples()
+            self.add_documents(basics, basic_meta)
+            print("✓ Added basic translation examples as fallback")
     
     def add_documents(self, texts: List[str], metadatas: Optional[List[dict]] = None):
         """Add documents to the underlying pipeline."""
@@ -204,7 +149,8 @@ Italian: Vorrei programmare una riunione"""
         if use_rag:
             from .utils import detect_language
             lang = detect_language(question)
-            metadata_filter = {f"lang_{lang}": True} if lang != "unknown" else None
+            # No metadata filtering for general queries - let semantic search handle it
+            metadata_filter = None
             response = self.pipeline.query(
                 question, use_rag=True, k=k, metadata_filter=metadata_filter
             )
@@ -250,6 +196,7 @@ Italian: Vorrei programmare una riunione"""
         src_lang = source_lang or detect_language(text)
         metadata_filter = None
         if src_lang != "unknown":
+            # Filter by source and target language to get relevant examples
             metadata_filter = {"source_lang": src_lang, "target_lang": target_lang}
 
         system_msg = render_system_prompt(src_lang, target_lang, system_message)
