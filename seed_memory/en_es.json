@@ -11,4 +11,11 @@
     "source_sentence": "I would like a cup of coffee",
     "target_sentence": "Quisiera una taza de cafe"
   }
+  ,
+  {
+    "source_lang": "en",
+    "target_lang": "es",
+    "source_sentence": "How are you today?",
+    "target_sentence": "¿Cómo estás hoy?"
+  }
 ]

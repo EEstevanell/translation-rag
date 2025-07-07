@@ -75,9 +75,11 @@ python -m translation_rag "How do you say hello in Spanish?"
 python -m translation_rag --seed
 ```
 This command populates the ChromaDB vector store with a few example translation
-pairs stored under `seed_memory/`. Each example records the source and target
-languages along with the sentence pair, allowing the RAG system to retrieve
-relevant examples for a given language combination.
+pairs stored under `seed_memory/`. Each pair is saved as an independent
+document using only the source sentence for similarity search. The associated
+target sentence is kept in the document metadata so retrieval can be filtered by
+source and target languages and relevant examples are returned for a given
+language combination.
 
 ## Testing Different Approaches
 
