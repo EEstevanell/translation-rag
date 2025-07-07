@@ -15,6 +15,7 @@ from langchain_chroma import Chroma
 from chromadb.config import Settings
 
 from .logging_utils import get_logger
+from .config import Config
 
 # Embedding imports happen lazily in ``get_embeddings`` to avoid heavy
 # dependencies during tests.
@@ -180,23 +181,34 @@ class RAGPipeline:
         """
         self.logger.info(f"Query: {question} | use_rag={use_rag}")
         if use_rag and self.vectorstore:
-            search_kwargs = {"k": k}
-            if metadata_filter:
-                search_kwargs["filter"] = self._build_filter(metadata_filter)
-            retriever = self.vectorstore.as_retriever(search_kwargs=search_kwargs)
-
-            # Retrieve and log documents for debugging
-            # ``get_relevant_documents`` was deprecated in langchain 0.1.46.
-            # ``invoke`` returns the same list of documents without the
-            # deprecation warning.
+            # Use similarity search with scores to filter by threshold
             retrieval_query = query_text or question
-            retrieved = retriever.invoke(retrieval_query)
-            if retrieved:
-                for doc in retrieved:
+            results_with_scores = self.vectorstore.similarity_search_with_score(
+                retrieval_query, k=k, filter=self._build_filter(metadata_filter) if metadata_filter else None
+            )
+            
+            # Filter results based on similarity threshold
+            # Note: Chroma returns distance, where lower values mean higher similarity
+            # We need to convert distance to similarity and filter
+            filtered_results = []
+            for doc, score in results_with_scores:
+                # Convert distance to similarity (1 - normalized_distance)
+                # For cosine distance, similarity = 1 - distance
+                similarity = 1 - score if score <= 1 else 0
+                
+                self.logger.debug(f"Document similarity: {similarity:.3f} (distance: {score:.3f})")
+                
+                if similarity >= Config.SIMILARITY_THRESHOLD:
+                    filtered_results.append(doc)
                     preview = doc.page_content.replace("\n", " ")[:80]
-                    self.logger.debug(f"Retrieved: {preview} | meta={doc.metadata}")
-            else:
-                self.logger.debug("No relevant documents retrieved")
+                    self.logger.debug(f"Retrieved: {preview} | similarity={similarity:.3f} | meta={doc.metadata}")
+                else:
+                    self.logger.debug(f"Filtered out document with similarity {similarity:.3f} below threshold {Config.SIMILARITY_THRESHOLD}")
+            
+            retrieved = filtered_results
+            
+            if not retrieved:
+                self.logger.debug(f"No documents above similarity threshold {Config.SIMILARITY_THRESHOLD}")
 
             # Build context string using retrieved documents. If a target sentence
             # is present in metadata, include it so the LLM sees the full

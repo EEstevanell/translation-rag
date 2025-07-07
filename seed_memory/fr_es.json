@@ -1,0 +1,12 @@
+[
+  {"source_lang": "fr", "target_lang": "es", "source_sentence": "Bonjour", "target_sentence": "Buenos días"},
+  {"source_lang": "fr", "target_lang": "es", "source_sentence": "Comment ça va ?", "target_sentence": "¿Cómo estás?"},
+  {"source_lang": "fr", "target_lang": "es", "source_sentence": "Merci pour ton aide", "target_sentence": "Gracias por tu ayuda"},
+  {"source_lang": "fr", "target_lang": "es", "source_sentence": "Où se trouve la bibliothèque ?", "target_sentence": "¿Dónde está la biblioteca?"},
+  {"source_lang": "fr", "target_lang": "es", "source_sentence": "J'aime beaucoup la musique", "target_sentence": "Me gusta mucho la música"},
+  {"source_lang": "fr", "target_lang": "es", "source_sentence": "Le projet doit être terminé demain", "target_sentence": "El proyecto debe estar terminado mañana"},
+  {"source_lang": "fr", "target_lang": "es", "source_sentence": "Peux-tu m'envoyer le document ?", "target_sentence": "¿Puedes enviarme el documento?"},
+  {"source_lang": "fr", "target_lang": "es", "source_sentence": "La réunion est à trois heures", "target_sentence": "La reunión es a las tres"},
+  {"source_lang": "fr", "target_lang": "es", "source_sentence": "J'ai besoin de mettre à jour le logiciel", "target_sentence": "Necesito actualizar el software"},
+  {"source_lang": "fr", "target_lang": "es", "source_sentence": "Le temps est très agréable", "target_sentence": "El clima está muy agradable"}
+]

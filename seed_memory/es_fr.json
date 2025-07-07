@@ -1,0 +1,22 @@
+[
+  {"source_lang": "es", "target_lang": "fr", "source_sentence": "Buenos días", "target_sentence": "Bonjour"},
+  {"source_lang": "es", "target_lang": "fr", "source_sentence": "¿Cómo estás?", "target_sentence": "Comment ça va ?"},
+  {"source_lang": "es", "target_lang": "fr", "source_sentence": "Gracias por tu ayuda", "target_sentence": "Merci pour ton aide"},
+  {"source_lang": "es", "target_lang": "fr", "source_sentence": "¿Dónde está la biblioteca?", "target_sentence": "Où se trouve la bibliothèque ?"},
+  {"source_lang": "es", "target_lang": "fr", "source_sentence": "Me gusta mucho la música", "target_sentence": "J'aime beaucoup la musique"},
+  {"source_lang": "es", "target_lang": "fr", "source_sentence": "El proyecto debe estar terminado mañana", "target_sentence": "Le projet doit être terminé demain"},
+  {"source_lang": "es", "target_lang": "fr", "source_sentence": "¿Puedes enviarme el documento?", "target_sentence": "Peux-tu m'envoyer le document ?"},
+  {"source_lang": "es", "target_lang": "fr", "source_sentence": "La reunión es a las tres", "target_sentence": "La réunion est à trois heures"},
+  {"source_lang": "es", "target_lang": "fr", "source_sentence": "Necesito actualizar el software", "target_sentence": "J'ai besoin de mettre à jour le logiciel"},
+  {"source_lang": "es", "target_lang": "fr", "source_sentence": "El clima está muy agradable", "target_sentence": "Le temps est très agréable"},
+  {"source_lang": "es", "target_lang": "fr", "source_sentence": "¿Hablas francés?", "target_sentence": "Parles-tu français ?"},
+  {"source_lang": "es", "target_lang": "fr", "source_sentence": "¿Cuánto cuesta este libro?", "target_sentence": "Combien coûte ce livre ?"},
+  {"source_lang": "es", "target_lang": "fr", "source_sentence": "¿Podrías repetir eso, por favor?", "target_sentence": "Pourrais-tu répéter cela, s'il te plaît ?"},
+  {"source_lang": "es", "target_lang": "fr", "source_sentence": "Disculpe, ¿dónde está el baño?", "target_sentence": "Excusez-moi, où sont les toilettes ?"},
+  {"source_lang": "es", "target_lang": "fr", "source_sentence": "La comida francesa es exquisita", "target_sentence": "La cuisine française est exquise"},
+  {"source_lang": "es", "target_lang": "fr", "source_sentence": "El médico me recetó antibióticos", "target_sentence": "Le médecin m'a prescrit des antibiotiques"},
+  {"source_lang": "es", "target_lang": "fr", "source_sentence": "¿A qué hora abre el museo?", "target_sentence": "À quelle heure ouvre le musée ?"},
+  {"source_lang": "es", "target_lang": "fr", "source_sentence": "El tren llega con retraso", "target_sentence": "Le train arrive en retard"},
+  {"source_lang": "es", "target_lang": "fr", "source_sentence": "¿Dónde puedo comprar sellos?", "target_sentence": "Où puis-je acheter des timbres ?"},
+  {"source_lang": "es", "target_lang": "fr", "source_sentence": "La tecnología avanza muy rápido", "target_sentence": "La technologie progresse très rapidement"}
+]

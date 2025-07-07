@@ -1,0 +1,12 @@
+[
+  {"source_lang": "fr", "target_lang": "de", "source_sentence": "Bonjour", "target_sentence": "Guten Morgen"},
+  {"source_lang": "fr", "target_lang": "de", "source_sentence": "Comment ça va ?", "target_sentence": "Wie geht es dir?"},
+  {"source_lang": "fr", "target_lang": "de", "source_sentence": "Merci pour ton aide", "target_sentence": "Danke für deine Hilfe"},
+  {"source_lang": "fr", "target_lang": "de", "source_sentence": "Où se trouve la bibliothèque ?", "target_sentence": "Wo ist die Bibliothek?"},
+  {"source_lang": "fr", "target_lang": "de", "source_sentence": "J'aime beaucoup la musique", "target_sentence": "Ich mag Musik sehr"},
+  {"source_lang": "fr", "target_lang": "de", "source_sentence": "Le projet doit être terminé demain", "target_sentence": "Das Projekt muss morgen fertig sein"},
+  {"source_lang": "fr", "target_lang": "de", "source_sentence": "Peux-tu m'envoyer le document ?", "target_sentence": "Kannst du mir das Dokument schicken?"},
+  {"source_lang": "fr", "target_lang": "de", "source_sentence": "La réunion est à trois heures", "target_sentence": "Das Meeting ist um drei Uhr"},
+  {"source_lang": "fr", "target_lang": "de", "source_sentence": "J'ai besoin de mettre à jour le logiciel", "target_sentence": "Ich muss die Software aktualisieren"},
+  {"source_lang": "fr", "target_lang": "de", "source_sentence": "Le temps est très agréable", "target_sentence": "Das Wetter ist sehr angenehm"}
+]

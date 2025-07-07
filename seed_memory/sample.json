@@ -4,5 +4,29 @@
     "target_lang": "en",
     "source_sentence": "Hola, como estas?",
     "target_sentence": "Hello, how are you?"
+  },
+  {
+    "source_lang": "en",
+    "target_lang": "fr",
+    "source_sentence": "The artificial intelligence system is processing the data",
+    "target_sentence": "Le système d'intelligence artificielle traite les données"
+  },
+  {
+    "source_lang": "de",
+    "target_lang": "en",
+    "source_sentence": "Die maschinelle Übersetzung wird immer besser",
+    "target_sentence": "Machine translation is getting better and better"
+  },
+  {
+    "source_lang": "en",
+    "target_lang": "it",
+    "source_sentence": "Can you please confirm the meeting schedule for tomorrow?",
+    "target_sentence": "Puoi confermare il programma della riunione per domani?"
+  },
+  {
+    "source_lang": "pt",
+    "target_lang": "en",
+    "source_sentence": "A tecnologia está revolucionando a comunicação global",
+    "target_sentence": "Technology is revolutionizing global communication"
   }
 ]
