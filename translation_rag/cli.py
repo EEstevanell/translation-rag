@@ -1,6 +1,7 @@
 """Unified Translation RAG system built on the reusable pipeline."""
 import sys
 import warnings
+import json
 from requests.exceptions import RequestsDependencyWarning
 
 # Silence noisy warning when charset detection libs are missing
@@ -83,40 +84,75 @@ class TranslationRAG:
             print("✓ Loaded existing translation memory from ChromaDB")
             return
 
-        # Ensure sample data file exists
-        setup_sample_data_file()
-        
-        # Load translation data
-        data = load_translation_data("translation_data.json")
+        # Load sentence memory from sentences.json
         documents: List[str] = []
         metadatas: List[dict] = []
-        if data:
-            documents.extend(format_translation_examples(data))
-            for item in data:
-                langs = list(item.get("translations", {}).keys())
-                lang_flags = {f"lang_{code}": True for code in langs}
-                metadatas.append(
-                    {
-                        "type": item.get("type", "general"),
-                        "context": item.get("context", "General"),
-                        "formality": item.get("formality", "neutral"),
-                        **lang_flags,
-                    }
-                )
-            print(f"✓ Loaded {len(data)} translation examples from file")
+        
+        # Try to load sentence memory first
+        sentence_data = self.load_sentence_memory()
+        if sentence_data:
+            for sentence in sentence_data:
+                documents.append(sentence["text"])
+                metadatas.append({
+                    "id": sentence.get("id", ""),
+                    "language": sentence.get("language", "unknown"),
+                    "domain": sentence.get("domain", "general"),
+                    "formality": sentence.get("formality", "neutral"),
+                    "source": "sentence_memory"
+                })
+            print(f"✓ Loaded {len(sentence_data)} sentences from sentence memory")
         else:
-            basics, basic_meta = self.get_basic_examples()
-            documents.extend(basics)
-            metadatas.extend(basic_meta)
+            # Fallback to original behavior if sentence memory is not available
+            # Ensure sample data file exists
+            setup_sample_data_file()
+            
+            # Load translation data
+            data = load_translation_data("translation_data.json")
+            if data:
+                documents.extend(format_translation_examples(data))
+                for item in data:
+                    langs = list(item.get("translations", {}).keys())
+                    lang_flags = {f"lang_{code}": True for code in langs}
+                    metadatas.append(
+                        {
+                            "type": item.get("type", "general"),
+                            "context": item.get("context", "General"),
+                            "formality": item.get("formality", "neutral"),
+                            **lang_flags,
+                        }
+                    )
+                print(f"✓ Loaded {len(data)} translation examples from file")
+            else:
+                basics, basic_meta = self.get_basic_examples()
+                documents.extend(basics)
+                metadatas.extend(basic_meta)
 
-        from .translation_memory import load_fake_memory, memory_to_documents
+            from .translation_memory import load_fake_memory, memory_to_documents
 
-        mem_texts, mem_meta = memory_to_documents(load_fake_memory())
-        documents.extend(mem_texts)
-        metadatas.extend(mem_meta)
+            mem_texts, mem_meta = memory_to_documents(load_fake_memory())
+            documents.extend(mem_texts)
+            metadatas.extend(mem_meta)
 
         self.add_documents(documents, metadatas)
         print(f"✓ Added {len(documents)} documents to ChromaDB")
+    
+    def load_sentence_memory(self):
+        """Load sentence memory from sentences.json."""
+        sentence_file = "sentence_memory/sentences.json"
+        try:
+            with open(sentence_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                if isinstance(data, list):
+                    return data
+                else:
+                    print(f"Warning: Expected list format in {sentence_file}")
+                    return []
+        except FileNotFoundError:
+            print(f"Sentence memory file not found: {sentence_file}")
+            return []
+        except json.JSONDecodeError as e:
+            print(f"Error parsing JSON file {sentence_file}: {e}")
+            return []
     
     def add_documents(self, texts: List[str], metadatas: Optional[List[dict]] = None):
         """Add documents to the underlying pipeline."""
