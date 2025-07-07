@@ -168,8 +168,23 @@ class RAGPipeline:
         use_rag: bool = True,
         k: int = 3,
         metadata_filter: Optional[dict] = None,
+        query_text: Optional[str] = None,
     ) -> str:
-        """Query the pipeline with optional metadata filtering."""
+        """Query the pipeline with optional metadata filtering.
+
+        Parameters
+        ----------
+        question: str
+            The text or prompt that will be sent to the LLM.
+        use_rag: bool, optional
+            Whether to retrieve examples from the vector store.
+        k: int, optional
+            Number of documents to retrieve.
+        metadata_filter: dict, optional
+            Metadata filter passed to the retriever.
+        query_text: str, optional
+            Text used for similarity search. If omitted, ``question`` is used.
+        """
         self.logger.info(f"Query: {question} | use_rag={use_rag}")
         if use_rag and self.vectorstore:
             search_kwargs = {"k": k}
@@ -181,7 +196,8 @@ class RAGPipeline:
             # ``get_relevant_documents`` was deprecated in langchain 0.1.46.
             # ``invoke`` returns the same list of documents without the
             # deprecation warning.
-            retrieved = retriever.invoke(question)
+            retrieval_query = query_text or question
+            retrieved = retriever.invoke(retrieval_query)
             if retrieved:
                 for doc in retrieved:
                     preview = doc.page_content.replace("\n", " ")[:80]

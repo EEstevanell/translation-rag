@@ -52,26 +52,10 @@ class TranslationRAG:
             chunk_overlap=self.config.CHUNK_OVERLAP,
         )
 
-        # Custom prompt for the pipeline
+        # Prompt template simply injects retrieved examples into the pre-rendered
+        # translation prompt provided at query time.
         self.pipeline.prompt_template = PromptTemplate(
-            template="""You are an expert multilingual translator with deep cultural knowledge.
-            Use the following translation examples and context to help with translation tasks.
-
-            Context Examples:
-            {context}
-
-            Translation Request: {question}
-
-            Instructions:
-            1. Provide accurate translations
-            2. Explain cultural nuances when relevant
-            3. Suggest alternative translations if appropriate
-            4. Consider formality levels (formal/informal)
-            5. Note any regional variations
-
-            Supported Languages: English, Spanish, French, German, Italian, Portuguese, Chinese, Japanese, Korean, Russian, Arabic, Hindi
-
-            Response:""",
+            template="{question}\n\nContext Examples:\n{context}",
             input_variables=["context", "question"],
         )
         print("✓ RAG pipeline configured")
@@ -275,6 +259,7 @@ Italian: Vorrei programmare una riunione"""
             use_rag=use_rag,
             k=k,
             metadata_filter=metadata_filter,
+            query_text=text,
         )
     
     def display_stats(self):

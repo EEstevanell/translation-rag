@@ -1,0 +1,14 @@
+[
+  {
+    "source_lang": "en",
+    "target_lang": "es",
+    "source_sentence": "Good morning",
+    "target_sentence": "Buenos dias"
+  },
+  {
+    "source_lang": "en",
+    "target_lang": "es",
+    "source_sentence": "I would like a cup of coffee",
+    "target_sentence": "Quisiera una taza de cafe"
+  }
+]

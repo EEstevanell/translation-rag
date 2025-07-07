@@ -32,10 +32,10 @@ translation-rag/
 │   ├── pipeline.py        # Reusable RAG pipeline
 │   ├── translation_memory.py  # Translation memory helpers
 │   └── utils.py           # Utility functions
-├── seed_memory/           # Sample translation memories (generated with Claude Sonnet 4)
-│   ├── en_de.json         # English-German pairs
-│   ├── en_es.json         # English-Spanish pairs
-│   └── ...                # Other language combinations
+├── seed_memory/           # Sample translation memories
+│   ├── en_es.json         # English→Spanish pairs
+│   ├── es_en.json         # Spanish→English pairs
+│   └── sample.json        # Minimal example data
 ├── environment.yml        # Conda environment specification
 ├── chroma_db/             # ChromaDB storage (created automatically)
 └── tests/                 # Test suite
@@ -74,6 +74,10 @@ python -m translation_rag "How do you say hello in Spanish?"
 ```bash
 python -m translation_rag --seed
 ```
+This command populates the ChromaDB vector store with a few example translation
+pairs stored under `seed_memory/`. Each example records the source and target
+languages along with the sentence pair, allowing the RAG system to retrieve
+relevant examples for a given language combination.
 
 ## Testing Different Approaches
 
@@ -105,6 +109,9 @@ python -m translation_rag "Translate 'machine learning algorithm' to French"
 ```
 
 ### Filtering by language pair
+The vector store stores each translation example with its source and target
+language codes. Retrieval is performed on the source sentence only and filtered
+by the requested language pair so that only relevant examples are considered.
 ```bash
 # Restrict retrieval to a specific source/target pair
 python -m translation_rag "How do you say 'thank you' in Italian?" --from en --to es
