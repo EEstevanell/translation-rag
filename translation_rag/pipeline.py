@@ -21,29 +21,22 @@ from .logging_utils import get_logger
 
 
 def get_embeddings(model_name: str):
-    """Return an embedding instance with multiple fallbacks."""
-    # Prefer Fireworks embeddings when API key is available
+    """Return a Fireworks embedding instance."""
     try:
         from langchain_fireworks import FireworksEmbeddings
-
-        if os.getenv("FIREWORKS_API_KEY"):
-            return FireworksEmbeddings(model=model_name)
-    except Exception:
-        pass
-
-    try:
-        from langchain_community.embeddings import HuggingFaceEmbeddings
-
-        return HuggingFaceEmbeddings(model_name=model_name, model_kwargs={"device": "cpu"})
-    except Exception:
-        try:
-            from langchain_community.embeddings import SentenceTransformerEmbeddings
-
-            return SentenceTransformerEmbeddings(model_name=model_name)
-        except Exception:
-            from langchain_community.embeddings import FakeEmbeddings
-
-            return FakeEmbeddings(size=384)
+        
+        api_key = os.getenv("FIREWORKS_API_KEY")
+        if not api_key:
+            raise ValueError("FIREWORKS_API_KEY environment variable is required for embeddings")
+        
+        print(f"✓ Using Fireworks embeddings with model: {model_name}")
+        return FireworksEmbeddings(
+            model=model_name,
+            fireworks_api_key=api_key
+        )
+    except Exception as e:
+        print(f"⚠️  Failed to initialize Fireworks embeddings: {e}")
+        raise ValueError(f"Could not initialize Fireworks embeddings: {e}")
 
 
 def create_llm(model: str, api_key: str, base_url: str, max_tokens: int):

@@ -19,6 +19,7 @@ class Config:
     CHROMA_PERSIST_DIR = os.getenv('CHROMA_PERSIST_DIR', './chroma_db')
     CHUNK_SIZE = int(os.getenv('CHUNK_SIZE', 1000))
     CHUNK_OVERLAP = int(os.getenv('CHUNK_OVERLAP', 200))
+    SIMILARITY_THRESHOLD = float(os.getenv('SIMILARITY_THRESHOLD', 0.5))
     
     # System Configuration
     LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
@@ -50,5 +51,6 @@ class Config:
         print(f"  Max Tokens: {cls.MAX_TOKENS}")
         print(f"  Chroma DB: {cls.CHROMA_PERSIST_DIR}")
         print(f"  Embedding Model: {cls.EMBEDDING_MODEL}")
+        print(f"  Similarity Threshold: {cls.SIMILARITY_THRESHOLD}")
         print(f"  Log Level: {cls.LOG_LEVEL}")
         print(f"  Reflection: {cls.ENABLE_REFLECTION}")

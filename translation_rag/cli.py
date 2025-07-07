@@ -194,20 +194,45 @@ Italian: Vorrei programmare una riunione"""
         from .utils import detect_language, render_translation_prompt
 
         src_lang = source_lang or detect_language(text)
-        metadata_filter = None
-        if src_lang != "unknown":
-            # Filter by source and target language to get relevant examples
-            metadata_filter = {"source_lang": src_lang, "target_lang": target_lang}
+        context = None
+        
+        # Retrieve examples if using RAG
+        if use_rag and self.vectorstore:
+            metadata_filter = None
+            if src_lang != "unknown":
+                # Filter by source and target language to get relevant examples
+                metadata_filter = {"source_lang": src_lang, "target_lang": target_lang}
+            
+            search_kwargs = {"k": k}
+            if metadata_filter:
+                search_kwargs["filter"] = self.pipeline._build_filter(metadata_filter)
+            retriever = self.vectorstore.as_retriever(search_kwargs=search_kwargs)
+            
+            # Retrieve documents using the text to translate
+            retrieved = retriever.invoke(text)
+            if retrieved:
+                for doc in retrieved:
+                    preview = doc.page_content.replace("\n", " ")[:80]
+                    self.logger.debug(f"Retrieved: {preview} | meta={doc.metadata}")
+                
+                # Build context string using retrieved documents
+                context_parts = []
+                for doc in retrieved:
+                    tgt = doc.metadata.get("target_sentence")
+                    if tgt:
+                        context_parts.append(f"{doc.page_content} -> {tgt}")
+                    else:
+                        context_parts.append(doc.page_content)
+                context = "\n".join(context_parts)
+            else:
+                self.logger.debug("No relevant documents retrieved")
+                context = None
 
         system_msg = render_system_prompt(src_lang, target_lang, system_message)
-        prompt = render_translation_prompt(text, src_lang, target_lang, system_msg)
-        return self.pipeline.query(
-            prompt,
-            use_rag=use_rag,
-            k=k,
-            metadata_filter=metadata_filter,
-            query_text=text,
-        )
+        prompt = render_translation_prompt(text, src_lang, target_lang, system_msg, context)
+        
+        # Use the pipeline without RAG since we already have the context
+        return self.pipeline.query(prompt, use_rag=False)
     
     def display_stats(self):
         """Display system statistics."""

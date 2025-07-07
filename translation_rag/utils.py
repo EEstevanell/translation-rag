@@ -199,6 +199,7 @@ def render_translation_prompt(
     source_lang: str,
     target_lang: str,
     system_message: str,
+    context: Optional[str] = None,
 ) -> str:
     """Render the translation prompt using the Jinja template."""
     template = _jinja_env.get_template("translation_prompt.jinja")
@@ -208,6 +209,7 @@ def render_translation_prompt(
         target_lang=target_lang,
         supported_languages=", ".join(get_supported_languages().values()),
         system_message=system_message,
+        context=context,
     )
 
 
