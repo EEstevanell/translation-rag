@@ -210,25 +210,39 @@ Italian: Vorrei programmare una riunione"""
             )
             
             if results_with_scores:
-                self.logger.info(f"Retrieved {len(results_with_scores)} translation examples:")
+                self.logger.info(f"Retrieved {len(results_with_scores)} candidates from vector search:")
                 
-                retrieved = []
+                # Apply similarity threshold filtering (same logic as in pipeline.py)
+                filtered_results = []
                 for i, (doc, score) in enumerate(results_with_scores):
                     # Convert distance to similarity (1 - normalized_distance)
                     similarity = 1 - score if score <= 1 else 0
                     preview = doc.page_content.replace("\n", " ")[:60]
+                    
                     self.logger.info(f"  [{i+1}] Similarity: {similarity:.3f} | {preview}...")
-                    retrieved.append(doc)
-                
-                # Build context string using retrieved documents
-                context_parts = []
-                for doc in retrieved:
-                    tgt = doc.metadata.get("target_sentence")
-                    if tgt:
-                        context_parts.append(f"{doc.page_content} -> {tgt}")
+                    
+                    if similarity >= Config.SIMILARITY_THRESHOLD:
+                        filtered_results.append(doc)
+                        self.logger.debug(f"✓ Accepted (above threshold {Config.SIMILARITY_THRESHOLD:.3f})")
                     else:
-                        context_parts.append(doc.page_content)
-                context = "\n".join(context_parts)
+                        self.logger.info(f"  ✗ Filtered out (below threshold {Config.SIMILARITY_THRESHOLD:.3f})")
+                
+                retrieved = filtered_results
+                
+                if not retrieved:
+                    self.logger.info(f"No documents above similarity threshold {Config.SIMILARITY_THRESHOLD:.3f}")
+                    context = None
+                else:
+                    self.logger.info(f"Using {len(retrieved)} documents above threshold for context")
+                    # Build context string using retrieved documents
+                    context_parts = []
+                    for doc in retrieved:
+                        tgt = doc.metadata.get("target_sentence")
+                        if tgt:
+                            context_parts.append(f"{doc.page_content} -> {tgt}")
+                        else:
+                            context_parts.append(doc.page_content)
+                    context = "\n".join(context_parts)
             else:
                 self.logger.info("No relevant documents retrieved")
                 context = None
