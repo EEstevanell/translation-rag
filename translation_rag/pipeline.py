@@ -24,11 +24,11 @@ def get_embeddings(model_name: str):
     """Return a Fireworks embedding instance."""
     try:
         from langchain_fireworks import FireworksEmbeddings
-        
+
         api_key = os.getenv("FIREWORKS_API_KEY")
         if not api_key:
             raise ValueError("FIREWORKS_API_KEY environment variable is required for embeddings")
-        
+
         print(f"✓ Using Fireworks embeddings with model: {model_name}")
         return FireworksEmbeddings(
             model=model_name,
