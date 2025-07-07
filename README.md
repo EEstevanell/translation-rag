@@ -17,7 +17,7 @@ This is an experimental repository where we're exploring the integration of Retr
 - Multi-language support
 - ChromaDB vector storage for translation examples
 - Fireworks AI integration for generation
-- Flexible embedding model fallbacks
+- Fireworks embeddings required; failures raise errors
 - CLI interface for testing different scenarios
 
 ## Repository Structure
@@ -147,7 +147,7 @@ python -m translation_rag --seed
 ### Interesting Findings
 - ChromaDB performs well with multilingual embeddings for European languages
 - Cultural context examples significantly improve translation quality
-- The fallback embedding strategy helps with robustness
+- Proper Fireworks configuration is essential for stable performance
 
 ## Architecture Overview
 
@@ -198,5 +198,5 @@ python -m pytest tests/
 
 ### Common Issues
 - **ChromaDB Persistence**: If you encounter database locks, delete the `chroma_db/` directory
-- **Embedding Failures**: The system falls back through multiple embedding providers automatically
+- **Embedding Failures**: Missing or misconfigured Fireworks credentials will raise an error
 - **API Limits**: Fireworks AI has rate limits; consider adding delays for batch processing
