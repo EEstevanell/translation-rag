@@ -96,6 +96,13 @@ python -m translation_rag "How do you say 'thank you' in Italian?"
 python -m translation_rag "How do you say 'thank you' in Italian?" --no-rag
 ```
 
+### Levenshtein Retrieval
+Use the classic Levenshtein distance instead of vector similarity:
+
+```bash
+python -m translation_rag "How do you say 'thank you' in Italian?" --levenshtein --from en --to it
+```
+
 You can control how many examples RAG retrieves by passing the `--k` parameter:
 
 ```bash

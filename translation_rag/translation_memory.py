@@ -4,6 +4,11 @@ from pathlib import Path
 from dataclasses import dataclass
 from typing import List, Iterable
 
+try:
+    from Levenshtein import distance as _fast_levenshtein
+except Exception:  # pragma: no cover - optional dependency
+    _fast_levenshtein = None
+
 
 def _tokens(text: str) -> set[str]:
     """Convert text to a set of lowercase word tokens."""
@@ -17,6 +22,39 @@ def _jaccard(a: set[str], b: set[str]) -> float:
     return len(a & b) / len(union)
 
 
+def _levenshtein(a: str, b: str) -> int:
+    """Compute Levenshtein edit distance."""
+    if _fast_levenshtein:
+        return _fast_levenshtein(a, b)
+
+    if a == b:
+        return 0
+    if not a:
+        return len(b)
+    if not b:
+        return len(a)
+
+    prev = list(range(len(b) + 1))
+    for i, ca in enumerate(a, start=1):
+        curr = [i]
+        for j, cb in enumerate(b, start=1):
+            ins = prev[j] + 1
+            del_ = curr[j - 1] + 1
+            sub = prev[j - 1] + (ca != cb)
+            curr.append(min(ins, del_, sub))
+        prev = curr
+    return prev[-1]
+
+
+def _lev_similarity(a: str, b: str) -> float:
+    """Normalized similarity from Levenshtein distance."""
+    max_len = max(len(a), len(b))
+    if max_len == 0:
+        return 1.0
+    dist = _levenshtein(a, b)
+    return 1 - dist / max_len
+
+
 @dataclass
 class MemoryEntry:
     source_lang: str
@@ -24,10 +62,11 @@ class MemoryEntry:
     source_sentence: str
     target_sentence: str
     tokens: set[str]
+    lower_source: str
 
 
 class TranslationMemory:
-    """Simple translation memory using Jaccard similarity."""
+    """Simple translation memory supporting Jaccard and Levenshtein retrieval."""
 
     def __init__(self):
         self.entries: List[MemoryEntry] = []
@@ -39,6 +78,7 @@ class TranslationMemory:
             source_sentence=source_sentence,
             target_sentence=target_sentence,
             tokens=_tokens(source_sentence),
+            lower_source=source_sentence.lower(),
         )
         self.entries.append(entry)
 
@@ -61,9 +101,53 @@ class TranslationMemory:
         scored.sort(key=lambda x: x[0], reverse=True)
         return [e for _, e in scored[:k]]
 
+    def retrieve_levenshtein(
+        self,
+        sentence: str,
+        source_lang: str,
+        target_lang: str,
+        k: int = 2,
+        *,
+        return_scores: bool = False,
+    ) -> list[MemoryEntry] | list[tuple[float, MemoryEntry]]:
+        """Retrieve entries using Levenshtein similarity.
+
+        Parameters
+        ----------
+        sentence: str
+            The query sentence.
+        source_lang: str
+            Source language code.
+        target_lang: str
+            Target language code.
+        k: int, optional
+            Number of entries to return.
+        return_scores: bool, optional
+            If ``True`` return ``(score, entry)`` tuples instead of just
+            entries.
+        """
+
+        scored: list[tuple[float, MemoryEntry]] = []
+        for entry in self.entries:
+            if entry.source_lang == source_lang and entry.target_lang == target_lang:
+                sim = _lev_similarity(sentence.lower(), entry.lower_source)
+                scored.append((sim, entry))
+        scored.sort(key=lambda x: x[0], reverse=True)
+        results = scored[:k]
+        if return_scores:
+            return results
+        return [e for _, e in results]
+
     def translate_sentence(self, sentence: str, source_lang: str, target_lang: str) -> str:
         matches = self.retrieve(sentence, source_lang, target_lang, k=1)
         if matches and matches[0].tokens:
+            return matches[0].target_sentence
+        return f"[no translation for: {sentence.strip()}]"
+
+    def translate_sentence_levenshtein(self, sentence: str, source_lang: str, target_lang: str) -> str:
+        """Translate using Levenshtein retrieval."""
+        matches = self.retrieve_levenshtein(sentence, source_lang, target_lang, k=1)
+        if matches:
             return matches[0].target_sentence
         return f"[no translation for: {sentence.strip()}]"
 
@@ -74,6 +158,16 @@ class TranslationMemory:
             if not sent:
                 continue
             translated.append(self.translate_sentence(sent, source_lang, target_lang))
+        return " ".join(translated)
+
+    def translate_text_levenshtein(self, text: str, source_lang: str, target_lang: str) -> str:
+        """Translate text using Levenshtein retrieval."""
+        sentences = re.split(r"(?<=[.!?])\s+", text.strip())
+        translated = []
+        for sent in sentences:
+            if not sent:
+                continue
+            translated.append(self.translate_sentence_levenshtein(sent, source_lang, target_lang))
         return " ".join(translated)
 
 # Seed data lives in the repository root

@@ -15,6 +15,8 @@ from .utils import (
     render_system_prompt,
 )
 from .pipeline import RAGPipeline, create_llm, get_embeddings
+from .translation_memory import TranslationMemory
+from .strategies import SemanticRAG, LevenshteinRAG
 from .logging_utils import get_logger
 from langchain.prompts import PromptTemplate
 
@@ -30,6 +32,10 @@ class TranslationRAG:
         # Load existing ChromaDB state if available
         self.pipeline.load_vectorstore()
         self.vectorstore = self.pipeline.vectorstore
+        # Initialize retrieval strategies
+        self.semantic_rag = SemanticRAG(self.pipeline)
+        self.lev_memory = TranslationMemory()
+        self.lev_rag = LevenshteinRAG(self.lev_memory)
     
     def setup_pipeline(self) -> None:
         """Create the reusable RAG pipeline."""
@@ -63,6 +69,11 @@ class TranslationRAG:
         if self.pipeline.load_vectorstore():
             self.vectorstore = self.pipeline.vectorstore
             print("✓ Loaded existing translation memory from ChromaDB")
+            # Load memory entries for Levenshtein retrieval as well
+            from .translation_memory import load_fake_memory
+            self.lev_memory = TranslationMemory()
+            self.lev_memory.add_entries(load_fake_memory())
+            self.lev_rag = LevenshteinRAG(self.lev_memory)
             return
 
         # Load only from seed memory
@@ -75,6 +86,9 @@ class TranslationRAG:
             # while keeping the target sentences in metadata
             documents, metadatas = memory_to_documents(seed_entries)
             self.add_documents(documents, metadatas)
+            self.lev_memory = TranslationMemory()
+            self.lev_memory.add_entries(seed_entries)
+            self.lev_rag = LevenshteinRAG(self.lev_memory)
             print(f"✓ Added {len(documents)} translation examples from seed memory")
         else:
             print("⚠️  No seed memory found. Please check the seed_memory directory.")
@@ -173,6 +187,7 @@ Italian: Vorrei programmare una riunione"""
         system_message: str = DEFAULT_SYSTEM_PROMPT_TEMPLATE,
         use_rag: bool = True,
         k: int = 4,
+        use_levenshtein: bool = False,
     ) -> str:
         """Translate text using the underlying pipeline.
 
@@ -195,61 +210,15 @@ Italian: Vorrei programmare una riunione"""
 
         src_lang = source_lang or detect_language(text)
         context = None
-        
-        # Retrieve examples if using RAG
-        if use_rag and self.vectorstore:
-            metadata_filter = None
-            if src_lang != "unknown":
-                # Filter by source and target language to get relevant examples
-                metadata_filter = {"source_lang": src_lang, "target_lang": target_lang}
-            
-            # Use similarity search with scores to get similarity information
-            filter_dict = self.pipeline._build_filter(metadata_filter) if metadata_filter else None
-            results_with_scores = self.vectorstore.similarity_search_with_score(
-                text, k=k, filter=filter_dict
-            )
-            
-            if results_with_scores:
-                self.logger.info(f"Retrieved {len(results_with_scores)} candidates from vector search:")
-                
-                # Apply similarity threshold filtering (same logic as in pipeline.py)
-                filtered_results = []
-                for i, (doc, score) in enumerate(results_with_scores):
-                    # Convert distance to similarity (1 - normalized_distance)
-                    similarity = 1 - score if score <= 1 else 0
-                    preview = doc.page_content.replace("\n", " ")[:60]
-                    
-                    self.logger.info(f"  [{i+1}] Similarity: {similarity:.3f} | {preview}...")
-                    
-                    if similarity >= Config.SIMILARITY_THRESHOLD:
-                        filtered_results.append(doc)
-                        self.logger.debug(f"✓ Accepted (above threshold {Config.SIMILARITY_THRESHOLD:.3f})")
-                    else:
-                        self.logger.info(f"  ✗ Filtered out (below threshold {Config.SIMILARITY_THRESHOLD:.3f})")
-                
-                retrieved = filtered_results
-                
-                if not retrieved:
-                    self.logger.info(f"No documents above similarity threshold {Config.SIMILARITY_THRESHOLD:.3f}")
-                    context = None
-                else:
-                    self.logger.info(f"Using {len(retrieved)} documents above threshold for context")
-                    # Build context string using retrieved documents
-                    context_parts = []
-                    for doc in retrieved:
-                        tgt = doc.metadata.get("target_sentence")
-                        if tgt:
-                            context_parts.append(f"{doc.page_content} -> {tgt}")
-                        else:
-                            context_parts.append(doc.page_content)
-                    context = "\n".join(context_parts)
-            else:
-                self.logger.info("No relevant documents retrieved")
-                context = None
+
+        if use_levenshtein:
+            context = self.lev_rag.get_context(text, src_lang, target_lang, k=k)
+        elif use_rag:
+            context = self.semantic_rag.get_context(text, src_lang, target_lang, k=k)
 
         system_msg = render_system_prompt(src_lang, target_lang, system_message)
         prompt = render_translation_prompt(text, src_lang, target_lang, system_msg, context)
-        
+
         # Use the pipeline without RAG since we already have the context
         return self.pipeline.query(prompt, use_rag=False)
     
@@ -288,6 +257,7 @@ def main():
             print("  python -m translation_rag '<text>' --from SRC --to TGT [--system MESSAGE] [--k NUM]")
             print("       (MESSAGE can use {{ source_lang }} and {{ target_lang }} placeholders)")
             print("  python -m translation_rag '<translation_query>' --no-rag")
+            print("  python -m translation_rag '<translation_query>' --levenshtein")
             print("  python -m translation_rag --stats")
             print("  python -m translation_rag --seed")
             print("  python -m translation_rag --help")
@@ -307,6 +277,7 @@ def main():
         source_lang = None
         system_message = DEFAULT_SYSTEM_PROMPT_TEMPLATE
         rag_k = 4
+        use_lev = "--levenshtein" in sys.argv
         if "--to" in sys.argv:
             idx = sys.argv.index("--to")
             if idx + 1 < len(sys.argv):
@@ -338,6 +309,7 @@ def main():
             print("  python -m translation_rag '<text>' --from SRC --to TGT [--system MESSAGE] [--k NUM]")
             print("       (MESSAGE can use {{ source_lang }} and {{ target_lang }} placeholders)")
             print("  python -m translation_rag '<translation_query>' --no-rag")
+            print("  python -m translation_rag '<translation_query>' --levenshtein")
             print("  python -m translation_rag --stats")
             print("  python -m translation_rag --seed")
             print("  python -m translation_rag --help")
@@ -358,6 +330,8 @@ def main():
         if target_lang:
             print(f"Target Language: {target_lang}")
         print(f"Using RAG: {use_rag}")
+        if use_lev:
+            print("Levenshtein retrieval enabled")
         if use_rag:
             print(f"Retrieval k: {rag_k}")
         print("-" * 60)
@@ -370,6 +344,7 @@ def main():
                 system_message=system_message,
                 use_rag=use_rag,
                 k=rag_k,
+                use_levenshtein=use_lev,
             )
         else:
             raise ValueError("Both --from and --to must be provided for translation.")
