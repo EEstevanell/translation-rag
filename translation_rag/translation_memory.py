@@ -103,6 +103,18 @@ class TranslationMemory:
         scored.sort(key=lambda x: x[0], reverse=True)
         return [e for _, e in scored[:k]]
 
+    def retrieve_levenshtein_with_scores(
+        self, sentence: str, source_lang: str, target_lang: str, k: int = 2
+    ) -> List[tuple[float, MemoryEntry]]:
+        """Retrieve entries using Levenshtein similarity, returning scores."""
+        scored = []
+        for entry in self.entries:
+            if entry.source_lang == source_lang and entry.target_lang == target_lang:
+                sim = _lev_similarity(sentence.lower(), entry.source_sentence.lower())
+                scored.append((sim, entry))
+        scored.sort(key=lambda x: x[0], reverse=True)
+        return scored[:k]
+
     def translate_sentence(self, sentence: str, source_lang: str, target_lang: str) -> str:
         matches = self.retrieve(sentence, source_lang, target_lang, k=1)
         if matches and matches[0].tokens:
