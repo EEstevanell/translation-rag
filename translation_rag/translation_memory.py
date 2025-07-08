@@ -213,3 +213,25 @@ def memory_to_documents(entries: Iterable[dict]) -> tuple[list[str], list[dict]]
             }
         )
     return texts, metadatas
+
+
+def entries_from_vectorstore(vectorstore) -> List[dict]:
+    """Load translation memory entries from an existing Chroma vector store."""
+    try:
+        data = vectorstore.get(include=["documents", "metadatas"])
+    except Exception:
+        return []
+
+    docs = data.get("documents", []) or []
+    metas = data.get("metadatas", []) or []
+    entries: List[dict] = []
+    for doc, meta in zip(docs, metas):
+        entries.append(
+            {
+                "source_lang": meta.get("source_lang", "unknown"),
+                "target_lang": meta.get("target_lang", "unknown"),
+                "source_sentence": doc,
+                "target_sentence": meta.get("target_sentence", ""),
+            }
+        )
+    return entries

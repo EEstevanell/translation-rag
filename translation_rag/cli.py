@@ -15,7 +15,7 @@ from .utils import (
     render_system_prompt,
 )
 from .pipeline import RAGPipeline, create_llm, get_embeddings
-from .translation_memory import TranslationMemory
+from .translation_memory import TranslationMemory, entries_from_vectorstore
 from .strategies import SemanticRAG, LevenshteinRAG
 from .logging_utils import get_logger
 from langchain.prompts import PromptTemplate
@@ -32,9 +32,16 @@ class TranslationRAG:
         # Load existing ChromaDB state if available
         self.pipeline.load_vectorstore()
         self.vectorstore = self.pipeline.vectorstore
+
         # Initialize retrieval strategies
         self.semantic_rag = SemanticRAG(self.pipeline)
         self.lev_memory = TranslationMemory()
+
+        # If we loaded an existing vector store, load entries for Levenshtein
+        # retrieval directly from it so the same database is reused
+        if self.vectorstore:
+            self.lev_memory.add_entries(entries_from_vectorstore(self.vectorstore))
+
         self.lev_rag = LevenshteinRAG(self.lev_memory)
     
     def setup_pipeline(self) -> None:
@@ -69,10 +76,9 @@ class TranslationRAG:
         if self.pipeline.load_vectorstore():
             self.vectorstore = self.pipeline.vectorstore
             print("✓ Loaded existing translation memory from ChromaDB")
-            # Load memory entries for Levenshtein retrieval as well
-            from .translation_memory import load_fake_memory
+            # Load memory entries for Levenshtein retrieval from the vector store
             self.lev_memory = TranslationMemory()
-            self.lev_memory.add_entries(load_fake_memory())
+            self.lev_memory.add_entries(entries_from_vectorstore(self.vectorstore))
             self.lev_rag = LevenshteinRAG(self.lev_memory)
             return
 
