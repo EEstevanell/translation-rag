@@ -2,9 +2,9 @@
 
 from typing import Optional
 
-from ..logging_utils import get_logger
 from ..translation_memory import TranslationMemory
 from .base import RAGStrategy
+from ..logging_utils import get_logger
 
 
 class LevenshteinRAG(RAGStrategy):
@@ -17,17 +17,20 @@ class LevenshteinRAG(RAGStrategy):
     def get_context(
         self, text: str, source_lang: str, target_lang: str, k: int = 4
     ) -> Optional[str]:
-        entries_with_scores = self.memory.retrieve_levenshtein_with_scores(
-            text, source_lang, target_lang, k=k
+        results = self.memory.retrieve_levenshtein(
+            text, source_lang, target_lang, k=k, return_scores=True
         )
-        if not entries_with_scores:
+        if not results:
             self.logger.info("No relevant documents retrieved")
             return None
 
+        self.logger.info(
+            f"Retrieved {len(results)} documents using Levenshtein search:"
+        )
         context_parts = []
-        for i, (score, entry) in enumerate(entries_with_scores):
+        for i, (score, entry) in enumerate(results):
             preview = entry.source_sentence.replace("\n", " ")[:60]
-            self.logger.info(f"  [{i+1}] Levenshtein similarity: {score:.3f} | {preview}...")
+            self.logger.info(f"  [{i+1}] Similarity: {score:.3f} | {preview}...")
             context_parts.append(f"{entry.source_sentence} -> {entry.target_sentence}")
-        
+
         return "\n".join(context_parts)

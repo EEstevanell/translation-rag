@@ -4,6 +4,11 @@ from pathlib import Path
 from dataclasses import dataclass
 from typing import List, Iterable
 
+try:
+    from Levenshtein import distance as _fast_levenshtein
+except Exception:  # pragma: no cover - optional dependency
+    _fast_levenshtein = None
+
 
 def _tokens(text: str) -> set[str]:
     """Convert text to a set of lowercase word tokens."""
@@ -18,7 +23,10 @@ def _jaccard(a: set[str], b: set[str]) -> float:
 
 
 def _levenshtein(a: str, b: str) -> int:
-    """Compute Levenshtein edit distance between two strings."""
+    """Compute Levenshtein edit distance."""
+    if _fast_levenshtein:
+        return _fast_levenshtein(a, b)
+
     if a == b:
         return 0
     if not a:
@@ -54,6 +62,7 @@ class MemoryEntry:
     source_sentence: str
     target_sentence: str
     tokens: set[str]
+    lower_source: str
 
 
 class TranslationMemory:
@@ -69,6 +78,7 @@ class TranslationMemory:
             source_sentence=source_sentence,
             target_sentence=target_sentence,
             tokens=_tokens(source_sentence),
+            lower_source=source_sentence.lower(),
         )
         self.entries.append(entry)
 
@@ -92,28 +102,41 @@ class TranslationMemory:
         return [e for _, e in scored[:k]]
 
     def retrieve_levenshtein(
-        self, sentence: str, source_lang: str, target_lang: str, k: int = 2
-    ) -> List[MemoryEntry]:
-        """Retrieve entries using Levenshtein similarity."""
-        scored = []
-        for entry in self.entries:
-            if entry.source_lang == source_lang and entry.target_lang == target_lang:
-                sim = _lev_similarity(sentence.lower(), entry.source_sentence.lower())
-                scored.append((sim, entry))
-        scored.sort(key=lambda x: x[0], reverse=True)
-        return [e for _, e in scored[:k]]
+        self,
+        sentence: str,
+        source_lang: str,
+        target_lang: str,
+        k: int = 2,
+        *,
+        return_scores: bool = False,
+    ) -> list[MemoryEntry] | list[tuple[float, MemoryEntry]]:
+        """Retrieve entries using Levenshtein similarity.
 
-    def retrieve_levenshtein_with_scores(
-        self, sentence: str, source_lang: str, target_lang: str, k: int = 2
-    ) -> List[tuple[float, MemoryEntry]]:
-        """Retrieve entries using Levenshtein similarity, returning scores."""
-        scored = []
+        Parameters
+        ----------
+        sentence: str
+            The query sentence.
+        source_lang: str
+            Source language code.
+        target_lang: str
+            Target language code.
+        k: int, optional
+            Number of entries to return.
+        return_scores: bool, optional
+            If ``True`` return ``(score, entry)`` tuples instead of just
+            entries.
+        """
+
+        scored: list[tuple[float, MemoryEntry]] = []
         for entry in self.entries:
             if entry.source_lang == source_lang and entry.target_lang == target_lang:
-                sim = _lev_similarity(sentence.lower(), entry.source_sentence.lower())
+                sim = _lev_similarity(sentence.lower(), entry.lower_source)
                 scored.append((sim, entry))
         scored.sort(key=lambda x: x[0], reverse=True)
-        return scored[:k]
+        results = scored[:k]
+        if return_scores:
+            return results
+        return [e for _, e in results]
 
     def translate_sentence(self, sentence: str, source_lang: str, target_lang: str) -> str:
         matches = self.retrieve(sentence, source_lang, target_lang, k=1)
