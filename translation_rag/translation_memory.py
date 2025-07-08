@@ -116,6 +116,53 @@ class TranslationMemory:
         scored.sort(key=lambda x: x[0], reverse=True)
         return [e for _, e in scored[:k]]
 
+    def retrieve_jaccard(
+        self,
+        sentence: str,
+        source_lang: str,
+        target_lang: str,
+        k: int = 2,
+        *,
+        threshold: float | None = None,
+        return_scores: bool = False,
+    ) -> list[MemoryEntry] | list[tuple[float, MemoryEntry]]:
+        """Retrieve entries using Jaccard similarity.
+
+        Parameters
+        ----------
+        sentence: str
+            The query sentence.
+        source_lang: str
+            Source language code.
+        target_lang: str
+            Target language code.
+        k: int, optional
+            Number of entries to return.
+        threshold: float, optional
+            Minimum similarity required to keep a result. Defaults to
+            ``Config.SIMILARITY_THRESHOLD``.
+        return_scores: bool, optional
+            If ``True`` return ``(score, entry)`` tuples instead of just
+            entries.
+        """
+
+        if threshold is None:
+            threshold = Config.SIMILARITY_THRESHOLD
+
+        query_tokens = _tokens(sentence)
+        scored: list[tuple[float, MemoryEntry]] = []
+        for idx in self._index.get((source_lang, target_lang), []):
+            entry = self.entries[idx]
+            sim = _jaccard(query_tokens, entry.tokens)
+            if sim >= threshold:
+                scored.append((sim, entry))
+
+        scored.sort(key=lambda x: x[0], reverse=True)
+        results = scored[:k]
+        if return_scores:
+            return results
+        return [e for _, e in results]
+
     def retrieve_levenshtein(
         self,
         sentence: str,
@@ -170,6 +217,17 @@ class TranslationMemory:
             return matches[0].target_sentence
         return f"[no translation for: {sentence.strip()}]"
 
+    def translate_sentence_jaccard(
+        self, sentence: str, source_lang: str, target_lang: str
+    ) -> str:
+        """Translate using Jaccard retrieval with threshold."""
+        matches = self.retrieve_jaccard(
+            sentence, source_lang, target_lang, k=1
+        )
+        if matches:
+            return matches[0].target_sentence
+        return f"[no translation for: {sentence.strip()}]"
+
     def translate_sentence_levenshtein(
         self, sentence: str, source_lang: str, target_lang: str
     ) -> str:
@@ -199,6 +257,20 @@ class TranslationMemory:
                 continue
             translated.append(
                 self.translate_sentence_levenshtein(sent, source_lang, target_lang)
+            )
+        return " ".join(translated)
+
+    def translate_text_jaccard(
+        self, text: str, source_lang: str, target_lang: str
+    ) -> str:
+        """Translate text using Jaccard retrieval with threshold."""
+        sentences = re.split(r"(?<=[.!?])\s+", text.strip())
+        translated = []
+        for sent in sentences:
+            if not sent:
+                continue
+            translated.append(
+                self.translate_sentence_jaccard(sent, source_lang, target_lang)
             )
         return " ".join(translated)
 

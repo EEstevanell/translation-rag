@@ -1,4 +1,4 @@
-from translation_rag.strategies import LevenshteinRAG
+from translation_rag.strategies import JaccardRAG, LevenshteinRAG
 from translation_rag.translation_memory import (TranslationMemory,
                                                 load_fake_memory,
                                                 memory_to_documents)
@@ -46,3 +46,19 @@ def test_levenshtein_threshold():
     # Low threshold should return the entry
     low = tm.retrieve_levenshtein("hey", "en", "es", k=1, threshold=0.1)
     assert low
+
+
+def test_jaccard_retrieve():
+    tm = TranslationMemory()
+    tm.add_entries(load_fake_memory())
+    results = tm.retrieve_jaccard("Hola, como estas?", "es", "en", k=1)
+    assert results
+    assert results[0].target_sentence
+
+
+def test_jaccard_strategy():
+    tm = TranslationMemory()
+    tm.add_entries(load_fake_memory())
+    strat = JaccardRAG(tm)
+    context = strat.get_context("Hola, como estas?", "es", "en", k=1)
+    assert context and "Hola" in context and "Hello" in context

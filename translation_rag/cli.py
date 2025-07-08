@@ -10,7 +10,7 @@ from langchain.prompts import PromptTemplate
 from .config import Config
 from .logging_utils import get_logger
 from .pipeline import RAGPipeline, create_llm, get_embeddings
-from .strategies import LevenshteinRAG, SemanticRAG
+from .strategies import JaccardRAG, LevenshteinRAG, SemanticRAG
 from .translation_memory import TranslationMemory, entries_from_vectorstore
 from .utils import (
     DEFAULT_SYSTEM_PROMPT_TEMPLATE,
@@ -46,6 +46,7 @@ class TranslationRAG:
             self.lev_memory.add_entries(entries_from_vectorstore(self.vectorstore))
 
         self.lev_rag = LevenshteinRAG(self.lev_memory)
+        self.jaccard_rag = JaccardRAG(self.lev_memory)
 
     def setup_pipeline(self) -> None:
         """Create the reusable RAG pipeline."""
@@ -83,6 +84,7 @@ class TranslationRAG:
             self.lev_memory = TranslationMemory()
             self.lev_memory.add_entries(entries_from_vectorstore(self.vectorstore))
             self.lev_rag = LevenshteinRAG(self.lev_memory)
+            self.jaccard_rag = JaccardRAG(self.lev_memory)
             return
 
         # Load only from seed memory
@@ -98,6 +100,7 @@ class TranslationRAG:
             self.lev_memory = TranslationMemory()
             self.lev_memory.add_entries(seed_entries)
             self.lev_rag = LevenshteinRAG(self.lev_memory)
+            self.jaccard_rag = JaccardRAG(self.lev_memory)
             print(f"✓ Added {len(documents)} translation examples from seed memory")
         else:
             print("⚠️  No seed memory found. Please check the seed_memory directory.")
@@ -210,6 +213,7 @@ Italian: Vorrei programmare una riunione""",
         use_rag: bool = True,
         k: int = 4,
         use_levenshtein: bool = False,
+        use_jaccard: bool = False,
     ) -> str:
         """Translate text using the underlying pipeline.
 
@@ -227,6 +231,10 @@ Italian: Vorrei programmare una riunione""",
             Whether to use retrieval augmented generation.
         k: int, optional
             Number of documents to retrieve for RAG context.
+        use_levenshtein: bool, optional
+            If ``True`` use Levenshtein retrieval from the translation memory.
+        use_jaccard: bool, optional
+            If ``True`` use Jaccard retrieval from the translation memory.
         """
         from .utils import detect_language, render_translation_prompt
 
@@ -235,6 +243,8 @@ Italian: Vorrei programmare una riunione""",
 
         if use_levenshtein:
             context = self.lev_rag.get_context(text, src_lang, target_lang, k=k)
+        elif use_jaccard:
+            context = self.jaccard_rag.get_context(text, src_lang, target_lang, k=k)
         elif use_rag:
             context = self.semantic_rag.get_context(text, src_lang, target_lang, k=k)
 
@@ -286,6 +296,7 @@ def main():
             )
             print("  python -m translation_rag '<translation_query>' --no-rag")
             print("  python -m translation_rag '<translation_query>' --levenshtein")
+            print("  python -m translation_rag '<translation_query>' --jaccard")
             print("  python -m translation_rag --stats")
             print("  python -m translation_rag --seed")
             print("  python -m translation_rag --help")
@@ -308,6 +319,7 @@ def main():
         system_message = DEFAULT_SYSTEM_PROMPT_TEMPLATE
         rag_k = 4
         use_lev = "--levenshtein" in sys.argv
+        use_jac = "--jaccard" in sys.argv
         if "--to" in sys.argv:
             idx = sys.argv.index("--to")
             if idx + 1 < len(sys.argv):
@@ -344,6 +356,7 @@ def main():
             )
             print("  python -m translation_rag '<translation_query>' --no-rag")
             print("  python -m translation_rag '<translation_query>' --levenshtein")
+            print("  python -m translation_rag '<translation_query>' --jaccard")
             print("  python -m translation_rag --stats")
             print("  python -m translation_rag --seed")
             print("  python -m translation_rag --help")
@@ -368,6 +381,8 @@ def main():
         print(f"Using RAG: {use_rag}")
         if use_lev:
             print("Levenshtein retrieval enabled")
+        if use_jac:
+            print("Jaccard retrieval enabled")
         if use_rag:
             print(f"Retrieval k: {rag_k}")
         print("-" * 60)
@@ -381,6 +396,7 @@ def main():
                 use_rag=use_rag,
                 k=rag_k,
                 use_levenshtein=use_lev,
+                use_jaccard=use_jac,
             )
         else:
             raise ValueError("Both --from and --to must be provided for translation.")

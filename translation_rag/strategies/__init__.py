@@ -1,9 +1,10 @@
 """Retrieval strategies for Translation RAG."""
 
 from .base import RAGStrategy
+from .jaccard import JaccardRAG
 from .levenshtein import LevenshteinRAG
 
-__all__ = ["RAGStrategy", "LevenshteinRAG", "SemanticRAG"]
+__all__ = ["RAGStrategy", "JaccardRAG", "LevenshteinRAG", "SemanticRAG"]
 
 
 def __getattr__(name: str):
