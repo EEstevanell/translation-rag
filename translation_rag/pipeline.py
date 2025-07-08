@@ -2,21 +2,20 @@
 
 from __future__ import annotations
 
-from typing import List, Optional
 import os
+from typing import List, Optional
 
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.schema import Document
+from chromadb.config import Settings
 from langchain.prompts import PromptTemplate
-from langchain_fireworks import ChatFireworks
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain.schema import Document
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 # Chroma vector store is provided by the separate ``langchain-chroma`` package
 # as of LangChain 0.2.9. Importing from there avoids deprecation warnings.
 from langchain_chroma import Chroma
-from chromadb.config import Settings
+from langchain_fireworks import ChatFireworks
 
-from .logging_utils import get_logger
 from .config import Config
+from .logging_utils import get_logger
 
 # Embedding imports happen lazily in ``get_embeddings`` to avoid heavy
 # dependencies during tests.
@@ -116,12 +115,13 @@ class RAGPipeline:
         if len(metadata_filter) == 1:
             key, value = next(iter(metadata_filter.items()))
             return {key: {"$eq": value}}
-        return {
-            "$and": [{k: {"$eq": v}} for k, v in metadata_filter.items()]
-        }
+        return {"$and": [{k: {"$eq": v}} for k, v in metadata_filter.items()]}
 
     def add_documents(
-        self, texts: List[str], metadatas: Optional[List[dict]] = None, batch_size: int = 128
+        self,
+        texts: List[str],
+        metadatas: Optional[List[dict]] = None,
+        batch_size: int = 128,
     ) -> None:
         """Add texts to the vector store.
 
@@ -155,7 +155,6 @@ class RAGPipeline:
             batch_docs = documents[i : i + batch_size]
             self.vectorstore.add_documents(batch_docs)
 
-        
         self.logger.info(f"Added {len(documents)} documents to vector store")
         # Since Chroma 0.4.x documents are automatically persisted
         # when using a persistent directory.
@@ -188,33 +187,45 @@ class RAGPipeline:
             # Use similarity search with scores to filter by threshold
             retrieval_query = query_text or question
             results_with_scores = self.vectorstore.similarity_search_with_score(
-                retrieval_query, k=k, filter=self._build_filter(metadata_filter) if metadata_filter else None
+                retrieval_query,
+                k=k,
+                filter=self._build_filter(metadata_filter) if metadata_filter else None,
             )
-            
+
             # Filter results based on similarity threshold
             # Note: Chroma returns distance, where lower values mean higher similarity
             # We need to convert distance to similarity and filter
             filtered_results = []
-            self.logger.info(f"Retrieved {len(results_with_scores)} documents from vector search:")
-            
+            self.logger.info(
+                f"Retrieved {len(results_with_scores)} documents from vector search:"
+            )
+
             for i, (doc, score) in enumerate(results_with_scores):
                 # Convert distance to similarity (1 - normalized_distance)
                 # For cosine distance, similarity = 1 - distance
                 similarity = 1 - score if score <= 1 else 0
                 preview = doc.page_content.replace("\n", " ")[:60]
-                
-                self.logger.info(f"  [{i+1}] Similarity: {similarity:.3f} | {preview}...")
-                
+
+                self.logger.info(
+                    f"  [{i+1}] Similarity: {similarity:.3f} | {preview}..."
+                )
+
                 if similarity >= Config.SIMILARITY_THRESHOLD:
                     filtered_results.append(doc)
-                    self.logger.debug(f"✓ Accepted (above threshold {Config.SIMILARITY_THRESHOLD:.3f})")
+                    self.logger.debug(
+                        f"✓ Accepted (above threshold {Config.SIMILARITY_THRESHOLD:.3f})"
+                    )
                 else:
-                    self.logger.info(f"  ✗ Filtered out (below threshold {Config.SIMILARITY_THRESHOLD:.3f})")
-            
+                    self.logger.info(
+                        f"  ✗ Filtered out (below threshold {Config.SIMILARITY_THRESHOLD:.3f})"
+                    )
+
             retrieved = filtered_results
-            
+
             if not retrieved:
-                self.logger.debug(f"No documents above similarity threshold {Config.SIMILARITY_THRESHOLD}")
+                self.logger.debug(
+                    f"No documents above similarity threshold {Config.SIMILARITY_THRESHOLD}"
+                )
 
             # Build context string using retrieved documents. If a target sentence
             # is present in metadata, include it so the LLM sees the full
@@ -239,4 +250,3 @@ class RAGPipeline:
         result = response.content if hasattr(response, "content") else str(response)
         self.logger.debug(f"LLM response: {result}")
         return result
-

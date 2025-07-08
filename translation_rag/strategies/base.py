@@ -12,4 +12,3 @@ class RAGStrategy(ABC):
         self, text: str, source_lang: str, target_lang: str, k: int = 4
     ) -> Optional[str]:
         """Return contextual examples for the given text."""
-

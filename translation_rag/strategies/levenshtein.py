@@ -2,10 +2,10 @@
 
 from typing import Optional
 
-from ..translation_memory import TranslationMemory
 from ..config import Config
-from .base import RAGStrategy
 from ..logging_utils import get_logger
+from ..translation_memory import TranslationMemory
+from .base import RAGStrategy
 
 
 class LevenshteinRAG(RAGStrategy):

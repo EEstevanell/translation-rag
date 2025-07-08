@@ -1,24 +1,27 @@
 """Unified Translation RAG system built on the reusable pipeline."""
+
 import sys
 import warnings
-import json
+from typing import List, Optional
+
 from requests.exceptions import RequestsDependencyWarning
+from langchain.prompts import PromptTemplate
+
+from .config import Config
+from .logging_utils import get_logger
+from .pipeline import RAGPipeline, create_llm, get_embeddings
+from .strategies import LevenshteinRAG, SemanticRAG
+from .translation_memory import TranslationMemory, entries_from_vectorstore
+from .utils import (
+    DEFAULT_SYSTEM_PROMPT_TEMPLATE,
+    get_supported_languages,
+    render_system_prompt,
+)
 
 # Silence noisy warning when charset detection libs are missing
 warnings.filterwarnings("ignore", category=RequestsDependencyWarning)
-from typing import List, Optional
 
-from .config import Config
-from .utils import (
-    get_supported_languages,
-    DEFAULT_SYSTEM_PROMPT_TEMPLATE,
-    render_system_prompt,
-)
-from .pipeline import RAGPipeline, create_llm, get_embeddings
-from .translation_memory import TranslationMemory, entries_from_vectorstore
-from .strategies import SemanticRAG, LevenshteinRAG
-from .logging_utils import get_logger
-from langchain.prompts import PromptTemplate
+
 
 class TranslationRAG:
     """Translation RAG system with ChromaDB integration."""
@@ -43,7 +46,7 @@ class TranslationRAG:
             self.lev_memory.add_entries(entries_from_vectorstore(self.vectorstore))
 
         self.lev_rag = LevenshteinRAG(self.lev_memory)
-    
+
     def setup_pipeline(self) -> None:
         """Create the reusable RAG pipeline."""
         llm = create_llm(
@@ -69,7 +72,7 @@ class TranslationRAG:
             input_variables=["context", "question"],
         )
         print("✓ RAG pipeline configured")
-    
+
     def load_translation_data(self):
         """Load translation data from seed memory only."""
         # Try loading an existing vector store to avoid reseeding each run
@@ -102,12 +105,12 @@ class TranslationRAG:
             basics, basic_meta = self.get_basic_examples()
             self.add_documents(basics, basic_meta)
             print("✓ Added basic translation examples as fallback")
-    
+
     def add_documents(self, texts: List[str], metadatas: Optional[List[dict]] = None):
         """Add documents to the underlying pipeline."""
         self.pipeline.add_documents(texts, metadatas)
         self.vectorstore = self.pipeline.vectorstore
-    
+
     def get_basic_examples(self) -> tuple[List[str], List[dict]]:
         """Return a list of basic translation examples and metadata."""
         basic_examples = [
@@ -117,34 +120,47 @@ Spanish: Hola, ¿cómo estás?
 French: Bonjour, comment ça va?
 German: Hallo, wie geht's?
 Italian: Ciao, come stai?""",
-            
             """Context: Expressing Gratitude (Formality: neutral)
 English: Thank you very much
 Spanish: Muchas gracias
 French: Merci beaucoup
 German: Vielen Dank
 Italian: Grazie mille""",
-            
             """Context: Asking for Directions (Formality: neutral)
 English: Where is the bathroom?
 Spanish: ¿Dónde está el baño?
 French: Où sont les toilettes?
 German: Wo ist die Toilette?
 Italian: Dove si trova il bagno?""",
-            
             """Context: Business Communication (Formality: formal)
 English: I would like to schedule a meeting
 Spanish: Me gustaría programar una reunión
 French: J'aimerais programmer une réunion
 German: Ich möchte einen Termin vereinbaren
-Italian: Vorrei programmare una riunione"""
+Italian: Vorrei programmare una riunione""",
         ]
-        
+
         metadatas = [
-            {"type": "greeting", "context": "Common Greetings", "formality": "informal"},
-            {"type": "courtesy", "context": "Expressing Gratitude", "formality": "neutral"},
-            {"type": "question", "context": "Asking for Directions", "formality": "neutral"},
-            {"type": "business", "context": "Business Communication", "formality": "formal"}
+            {
+                "type": "greeting",
+                "context": "Common Greetings",
+                "formality": "informal",
+            },
+            {
+                "type": "courtesy",
+                "context": "Expressing Gratitude",
+                "formality": "neutral",
+            },
+            {
+                "type": "question",
+                "context": "Asking for Directions",
+                "formality": "neutral",
+            },
+            {
+                "type": "business",
+                "context": "Business Communication",
+                "formality": "formal",
+            },
         ]
         return basic_examples, metadatas
 
@@ -153,7 +169,7 @@ Italian: Vorrei programmare una riunione"""
         examples, metas = self.get_basic_examples()
         self.add_documents(examples, metas)
         print("✓ Added basic translation examples")
-    
+
     def query(self, question: str, use_rag: bool = True, k: int = 4) -> str:
         """Query the system with enhanced response handling.
 
@@ -167,8 +183,6 @@ Italian: Vorrei programmare una riunione"""
             Number of documents to retrieve from the vector store.
         """
         if use_rag:
-            from .utils import detect_language
-            lang = detect_language(question)
             # No metadata filtering for general queries - let semantic search handle it
             metadata_filter = None
             response = self.pipeline.query(
@@ -182,7 +196,9 @@ Italian: Vorrei programmare una riunione"""
                 "Please provide accurate translations and explain any cultural nuances when relevant."
             )
             response = self.pipeline.llm.invoke(enhanced_prompt)
-            response = response.content if hasattr(response, "content") else str(response)
+            response = (
+                response.content if hasattr(response, "content") else str(response)
+            )
         return response
 
     def translate(
@@ -223,17 +239,19 @@ Italian: Vorrei programmare una riunione"""
             context = self.semantic_rag.get_context(text, src_lang, target_lang, k=k)
 
         system_msg = render_system_prompt(src_lang, target_lang, system_message)
-        prompt = render_translation_prompt(text, src_lang, target_lang, system_msg, context)
+        prompt = render_translation_prompt(
+            text, src_lang, target_lang, system_msg, context
+        )
 
         # Use the pipeline without RAG since we already have the context
         return self.pipeline.query(prompt, use_rag=False)
-    
+
     def display_stats(self):
         """Display system statistics."""
-        print("\n" + "="*50)
+        print("\n" + "=" * 50)
         print("Translation RAG System Stats")
-        print("="*50)
-        
+        print("=" * 50)
+
         if self.pipeline.vectorstore:
             try:
                 collection = self.pipeline.vectorstore._collection
@@ -243,12 +261,12 @@ Italian: Vorrei programmare una riunione"""
                 print("ChromaDB: Active (stats unavailable)")
         else:
             print("No documents loaded")
-        
+
         print(f"Supported Languages: {len(get_supported_languages())}")
         print(f"ChromaDB Directory: {self.pipeline.persist_directory}")
-        
+
         self.config.display()
-        print("="*50)
+        print("=" * 50)
 
 
 def main():
@@ -260,8 +278,12 @@ def main():
             print("This system uses RAG (Retrieval Augmented Generation) to provide")
             print("accurate translations with cultural context.")
             print("\nUsage:")
-            print("  python -m translation_rag '<text>' --from SRC --to TGT [--system MESSAGE] [--k NUM]")
-            print("       (MESSAGE can use {{ source_lang }} and {{ target_lang }} placeholders)")
+            print(
+                "  python -m translation_rag '<text>' --from SRC --to TGT [--system MESSAGE] [--k NUM]"
+            )
+            print(
+                "       (MESSAGE can use {{ source_lang }} and {{ target_lang }} placeholders)"
+            )
             print("  python -m translation_rag '<translation_query>' --no-rag")
             print("  python -m translation_rag '<translation_query>' --levenshtein")
             print("  python -m translation_rag --stats")
@@ -277,7 +299,9 @@ def main():
 
         rag = TranslationRAG()
         if not rag.vectorstore:
-            print("⚠️  No translation memory found. Run 'python -m translation_rag --seed' to load sample data.")
+            print(
+                "⚠️  No translation memory found. Run 'python -m translation_rag --seed' to load sample data."
+            )
 
         target_lang = None
         source_lang = None
@@ -312,8 +336,12 @@ def main():
             print("\nTranslation RAG System")
             print("=====================")
             print("\nUsage:")
-            print("  python -m translation_rag '<text>' --from SRC --to TGT [--system MESSAGE] [--k NUM]")
-            print("       (MESSAGE can use {{ source_lang }} and {{ target_lang }} placeholders)")
+            print(
+                "  python -m translation_rag '<text>' --from SRC --to TGT [--system MESSAGE] [--k NUM]"
+            )
+            print(
+                "       (MESSAGE can use {{ source_lang }} and {{ target_lang }} placeholders)"
+            )
             print("  python -m translation_rag '<translation_query>' --no-rag")
             print("  python -m translation_rag '<translation_query>' --levenshtein")
             print("  python -m translation_rag --stats")
@@ -321,7 +349,9 @@ def main():
             print("  python -m translation_rag --help")
             print("\nExamples:")
             print("  python -m translation_rag 'Hello' --from en --to es")
-            print("  python -m translation_rag 'Guten Morgen' --from de --to en --system 'You are a polite translator.'")
+            print(
+                "  python -m translation_rag 'Guten Morgen' --from de --to en --system 'You are a polite translator.'"
+            )
             print("  python -m translation_rag 'Bonjour' --from fr --to it")
             sys.exit(1)
 
@@ -359,7 +389,7 @@ def main():
 
         if "--stats" in sys.argv:
             rag.display_stats()
-        
+
     except KeyboardInterrupt:
         print("\n\nTranslation session interrupted by user.")
         sys.exit(0)
@@ -367,6 +397,7 @@ def main():
         print(f"\nError: {e}")
         if Config.LOG_LEVEL == "DEBUG":
             import traceback
+
             traceback.print_exc()
         sys.exit(1)
 

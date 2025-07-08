@@ -1,9 +1,10 @@
-from __future__ import annotations
-
 """Logging setup for the Translation RAG system."""
+
+from __future__ import annotations
 
 import sys
 from pathlib import Path
+
 from loguru import logger
 
 from .config import Config
@@ -17,5 +18,6 @@ logger.remove()
 logger.add(sys.stderr, level=_LOG_LEVEL)
 logger.add(_LOG_FILE, rotation="1 MB", level=_LOG_LEVEL)
 
-# Convenience function for external modules
-get_logger = lambda: logger
+def get_logger() -> "logger":
+    """Return the configured logger instance."""
+    return logger

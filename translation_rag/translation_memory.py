@@ -1,8 +1,9 @@
-import re
 import json
-from pathlib import Path
+import re
 from dataclasses import dataclass
-from typing import List, Iterable
+from pathlib import Path
+from typing import Iterable, List
+
 from .config import Config
 
 try:
@@ -74,7 +75,13 @@ class TranslationMemory:
         # Index entries by (source_lang, target_lang) for faster lookup
         self._index: dict[tuple[str, str], List[int]] = {}
 
-    def add_entry(self, source_lang: str, target_lang: str, source_sentence: str, target_sentence: str) -> None:
+    def add_entry(
+        self,
+        source_lang: str,
+        target_lang: str,
+        source_sentence: str,
+        target_sentence: str,
+    ) -> None:
         entry = MemoryEntry(
             source_lang=source_lang,
             target_lang=target_lang,
@@ -155,13 +162,17 @@ class TranslationMemory:
             return results
         return [e for _, e in results]
 
-    def translate_sentence(self, sentence: str, source_lang: str, target_lang: str) -> str:
+    def translate_sentence(
+        self, sentence: str, source_lang: str, target_lang: str
+    ) -> str:
         matches = self.retrieve(sentence, source_lang, target_lang, k=1)
         if matches and matches[0].tokens:
             return matches[0].target_sentence
         return f"[no translation for: {sentence.strip()}]"
 
-    def translate_sentence_levenshtein(self, sentence: str, source_lang: str, target_lang: str) -> str:
+    def translate_sentence_levenshtein(
+        self, sentence: str, source_lang: str, target_lang: str
+    ) -> str:
         """Translate using Levenshtein retrieval."""
         matches = self.retrieve_levenshtein(sentence, source_lang, target_lang, k=1)
         if matches:
@@ -177,15 +188,20 @@ class TranslationMemory:
             translated.append(self.translate_sentence(sent, source_lang, target_lang))
         return " ".join(translated)
 
-    def translate_text_levenshtein(self, text: str, source_lang: str, target_lang: str) -> str:
+    def translate_text_levenshtein(
+        self, text: str, source_lang: str, target_lang: str
+    ) -> str:
         """Translate text using Levenshtein retrieval."""
         sentences = re.split(r"(?<=[.!?])\s+", text.strip())
         translated = []
         for sent in sentences:
             if not sent:
                 continue
-            translated.append(self.translate_sentence_levenshtein(sent, source_lang, target_lang))
+            translated.append(
+                self.translate_sentence_levenshtein(sent, source_lang, target_lang)
+            )
         return " ".join(translated)
+
 
 # Seed data lives in the repository root
 DEFAULT_MEMORY_DIR = Path(__file__).resolve().parents[1] / "seed_memory"

@@ -11,6 +11,8 @@ dependencies:
       - langchain_chroma
       - chromadb
       - python-dotenv
+      - jinja2
+      - langdetect
       - sentence-transformers  # For better embeddings
       - huggingface-hub        # HuggingFace integration
       - transformers           # For HuggingFace embeddings

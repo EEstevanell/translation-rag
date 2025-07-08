@@ -1,10 +1,12 @@
 """Utility functions for the Translation RAG system."""
-import os
+
 import json
-from typing import List, Dict, Any, Optional
+import os
 from pathlib import Path
-from langdetect import detect, LangDetectException
+from typing import Any, Dict, List, Optional
+
 from jinja2 import Environment, FileSystemLoader
+from langdetect import LangDetectException, detect
 
 # Jinja environment for rendering prompt templates
 TEMPLATE_DIR = Path(__file__).resolve().parent / "templates"
@@ -14,7 +16,7 @@ _jinja_env = Environment(loader=FileSystemLoader(TEMPLATE_DIR), autoescape=False
 def load_translation_data(file_path: str) -> List[Dict[str, Any]]:
     """Load translation data from a JSON file."""
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             return json.load(f)
     except FileNotFoundError:
         print(f"Translation data file not found: {file_path}")
@@ -30,7 +32,7 @@ def save_translation_data(data: List[Dict[str, Any]], file_path: str) -> bool:
         directory = os.path.dirname(file_path)
         if directory:
             os.makedirs(directory, exist_ok=True)
-        with open(file_path, 'w', encoding='utf-8') as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
         return True
     except Exception as e:
@@ -51,10 +53,10 @@ def create_sample_translation_data():
                 "de": "Hallo, wie geht es dir?",
                 "it": "Ciao, come stai?",
                 "pt": "Olá, como você está?",
-                "zh": "你好吗？"
+                "zh": "你好吗？",
             },
             "context": "Common greeting",
-            "formality": "informal"
+            "formality": "informal",
         },
         {
             "id": "courtesy_1",
@@ -66,10 +68,10 @@ def create_sample_translation_data():
                 "de": "Vielen Dank",
                 "it": "Grazie mille",
                 "pt": "Muito obrigado",
-                "zh": "非常感谢"
+                "zh": "非常感谢",
             },
             "context": "Expressing gratitude",
-            "formality": "neutral"
+            "formality": "neutral",
         },
         {
             "id": "question_1",
@@ -81,10 +83,10 @@ def create_sample_translation_data():
                 "de": "Wo ist die Toilette?",
                 "it": "Dove si trova il bagno?",
                 "pt": "Onde fica o banheiro?",
-                "zh": "厕所在哪里？"
+                "zh": "厕所在哪里？",
             },
             "context": "Asking for directions",
-            "formality": "neutral"
+            "formality": "neutral",
         },
         {
             "id": "business_1",
@@ -96,10 +98,10 @@ def create_sample_translation_data():
                 "de": "Ich möchte ein Meeting planen",
                 "it": "Vorrei programmare una riunione",
                 "pt": "Gostaria de agendar uma reunião",
-                "zh": "我想安排一个会议"
+                "zh": "我想安排一个会议",
             },
             "context": "Business communication",
-            "formality": "formal"
+            "formality": "formal",
         },
         {
             "id": "travel_1",
@@ -111,43 +113,43 @@ def create_sample_translation_data():
                 "de": "Wie viel kostet das?",
                 "it": "Quanto costa questo?",
                 "pt": "Quanto custa isso?",
-                "zh": "这个多少钱？"
+                "zh": "这个多少钱？",
             },
             "context": "Shopping/pricing inquiry",
-            "formality": "neutral"
-        }
+            "formality": "neutral",
+        },
     ]
-    
+
     return sample_data
 
 
 def format_translation_examples(data: List[Dict[str, Any]]) -> List[str]:
     """Format translation data for use in RAG system."""
     formatted_examples = []
-    
+
     for item in data:
-        translations = item.get('translations', {})
-        context = item.get('context', 'General')
-        formality = item.get('formality', 'neutral')
-        
+        translations = item.get("translations", {})
+        context = item.get("context", "General")
+        formality = item.get("formality", "neutral")
+
         # Create a formatted string for each translation set
         example_text = f"Context: {context} (Formality: {formality})\n"
-        
+
         for lang, text in translations.items():
             lang_names = {
-                'en': 'English',
-                'es': 'Spanish',
-                'fr': 'French',
-                'de': 'German',
-                'it': 'Italian',
-                'pt': 'Portuguese',
-                'zh': 'Chinese'
+                "en": "English",
+                "es": "Spanish",
+                "fr": "French",
+                "de": "German",
+                "it": "Italian",
+                "pt": "Portuguese",
+                "zh": "Chinese",
             }
             lang_name = lang_names.get(lang, lang.upper())
             example_text += f"{lang_name}: {text}\n"
-        
+
         formatted_examples.append(example_text.strip())
-    
+
     return formatted_examples
 
 
@@ -162,18 +164,18 @@ def setup_sample_data_file(file_path: str = "translation_data.json") -> bool:
 def get_supported_languages() -> Dict[str, str]:
     """Get a dictionary of supported language codes and their names."""
     return {
-        'en': 'English',
-        'es': 'Spanish',
-        'fr': 'French',  
-        'de': 'German',
-        'it': 'Italian',
-        'pt': 'Portuguese',
-        'zh': 'Chinese',
-        'ja': 'Japanese',
-        'ko': 'Korean',
-        'ru': 'Russian',
-        'ar': 'Arabic',
-        'hi': 'Hindi'
+        "en": "English",
+        "es": "Spanish",
+        "fr": "French",
+        "de": "German",
+        "it": "Italian",
+        "pt": "Portuguese",
+        "zh": "Chinese",
+        "ja": "Japanese",
+        "ko": "Korean",
+        "ru": "Russian",
+        "ar": "Arabic",
+        "hi": "Hindi",
     }
 
 
@@ -190,6 +192,7 @@ def render_system_prompt(
         template = _jinja_env.get_template(DEFAULT_SYSTEM_PROMPT_TEMPLATE)
     else:
         from jinja2 import Template
+
         template = Template(template_str)
     return template.render(source_lang=source_lang, target_lang=target_lang)
 
@@ -225,6 +228,7 @@ def clean_chroma_db(persist_directory: str = "./chroma_db") -> bool:
     """Clean the ChromaDB persistent directory."""
     try:
         import shutil
+
         if os.path.exists(persist_directory):
             shutil.rmtree(persist_directory)
             print(f"✓ Cleaned ChromaDB directory: {persist_directory}")
