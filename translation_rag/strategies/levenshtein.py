@@ -3,6 +3,7 @@
 from typing import Optional
 
 from ..translation_memory import TranslationMemory
+from ..config import Config
 from .base import RAGStrategy
 from ..logging_utils import get_logger
 
@@ -18,14 +19,20 @@ class LevenshteinRAG(RAGStrategy):
         self, text: str, source_lang: str, target_lang: str, k: int = 4
     ) -> Optional[str]:
         results = self.memory.retrieve_levenshtein(
-            text, source_lang, target_lang, k=k, return_scores=True
+            text,
+            source_lang,
+            target_lang,
+            k=k,
+            threshold=Config.SIMILARITY_THRESHOLD,
+            return_scores=True,
         )
         if not results:
             self.logger.info("No relevant documents retrieved")
             return None
 
         self.logger.info(
-            f"Retrieved {len(results)} documents using Levenshtein search:"
+            f"Retrieved {len(results)} documents using Levenshtein search "
+            f"(threshold {Config.SIMILARITY_THRESHOLD:.3f}):"
         )
         context_parts = []
         for i, (score, entry) in enumerate(results):

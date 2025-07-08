@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 from dataclasses import dataclass
 from typing import List, Iterable
+from .config import Config
 
 try:
     from Levenshtein import distance as _fast_levenshtein
@@ -70,6 +71,8 @@ class TranslationMemory:
 
     def __init__(self):
         self.entries: List[MemoryEntry] = []
+        # Index entries by (source_lang, target_lang) for faster lookup
+        self._index: dict[tuple[str, str], List[int]] = {}
 
     def add_entry(self, source_lang: str, target_lang: str, source_sentence: str, target_sentence: str) -> None:
         entry = MemoryEntry(
@@ -80,7 +83,10 @@ class TranslationMemory:
             tokens=_tokens(source_sentence),
             lower_source=source_sentence.lower(),
         )
+        idx = len(self.entries)
         self.entries.append(entry)
+        key = (source_lang, target_lang)
+        self._index.setdefault(key, []).append(idx)
 
     def add_entries(self, data: Iterable[dict]) -> None:
         for item in data:
@@ -91,13 +97,15 @@ class TranslationMemory:
                 item["target_sentence"],
             )
 
-    def retrieve(self, sentence: str, source_lang: str, target_lang: str, k: int = 2) -> List[MemoryEntry]:
+    def retrieve(
+        self, sentence: str, source_lang: str, target_lang: str, k: int = 2
+    ) -> List[MemoryEntry]:
         query_tokens = _tokens(sentence)
         scored = []
-        for entry in self.entries:
-            if entry.source_lang == source_lang and entry.target_lang == target_lang:
-                sim = _jaccard(query_tokens, entry.tokens)
-                scored.append((sim, entry))
+        for idx in self._index.get((source_lang, target_lang), []):
+            entry = self.entries[idx]
+            sim = _jaccard(query_tokens, entry.tokens)
+            scored.append((sim, entry))
         scored.sort(key=lambda x: x[0], reverse=True)
         return [e for _, e in scored[:k]]
 
@@ -108,6 +116,7 @@ class TranslationMemory:
         target_lang: str,
         k: int = 2,
         *,
+        threshold: float | None = None,
         return_scores: bool = False,
     ) -> list[MemoryEntry] | list[tuple[float, MemoryEntry]]:
         """Retrieve entries using Levenshtein similarity.
@@ -122,16 +131,24 @@ class TranslationMemory:
             Target language code.
         k: int, optional
             Number of entries to return.
+        threshold: float, optional
+            Minimum similarity required to keep a result. Defaults to
+            ``Config.SIMILARITY_THRESHOLD``.
         return_scores: bool, optional
             If ``True`` return ``(score, entry)`` tuples instead of just
             entries.
         """
 
+        if threshold is None:
+            threshold = Config.SIMILARITY_THRESHOLD
+
         scored: list[tuple[float, MemoryEntry]] = []
-        for entry in self.entries:
-            if entry.source_lang == source_lang and entry.target_lang == target_lang:
-                sim = _lev_similarity(sentence.lower(), entry.lower_source)
+        for idx in self._index.get((source_lang, target_lang), []):
+            entry = self.entries[idx]
+            sim = _lev_similarity(sentence.lower(), entry.lower_source)
+            if sim >= threshold:
                 scored.append((sim, entry))
+
         scored.sort(key=lambda x: x[0], reverse=True)
         results = scored[:k]
         if return_scores:

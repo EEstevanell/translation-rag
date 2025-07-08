@@ -35,3 +35,16 @@ def test_levenshtein_strategy():
     strat = LevenshteinRAG(tm)
     context = strat.get_context("Hola, como estas?", "es", "en", k=1)
     assert context and "Hola" in context and "Hello" in context
+
+
+def test_levenshtein_threshold():
+    tm = TranslationMemory()
+    tm.add_entry("en", "es", "hello", "hola")
+
+    # High threshold should filter the result
+    high = tm.retrieve_levenshtein("hey", "en", "es", k=1, threshold=0.9)
+    assert high == []
+
+    # Low threshold should return the entry
+    low = tm.retrieve_levenshtein("hey", "en", "es", k=1, threshold=0.1)
+    assert low
