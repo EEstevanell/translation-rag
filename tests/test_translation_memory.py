@@ -1,9 +1,7 @@
-from translation_rag.translation_memory import (
-    TranslationMemory,
-    load_fake_memory,
-    memory_to_documents,
-)
 from translation_rag.strategies import LevenshteinRAG
+from translation_rag.translation_memory import (TranslationMemory,
+                                                load_fake_memory,
+                                                memory_to_documents)
 
 
 def test_basic_translation():
